@@ -237,7 +237,7 @@ const RequestAccessPage = ({ setCurrentView }) => {
       setTimeout(() => {
         setIsSubmitted(false);
         setFormData({ name: '', email: '', school: '', position: '', message: '' });
-      }, 3000);
+      }, 15000);
     }, 1500);
   };
 
