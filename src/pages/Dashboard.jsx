@@ -1,5 +1,5 @@
 import Header from "../components/layout/Header";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Users,
   BookOpen,
@@ -56,7 +56,7 @@ const Dashboard = ({
           { id: "progress", label: "Progress", icon: TrendingUp },
           { id: "settings", label: "Settings", icon: Settings },
         ];
-
+const [selectedAssignment, setSelectedAssignment] = useState(null);
   return (
     <div className="min-h-screen bg-gray-50">
       <Header currentUser={currentUser} userRole={userRole} onLogout={logout} />
@@ -409,7 +409,10 @@ const Dashboard = ({
                             </div>
                           </div>
                           <div className="flex space-x-2">
-                            <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                            <button
+                              onClick={() => setSelectedAssignment(assignment)}
+                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            >
                               <Eye className="w-4 h-4" />
                             </button>
                           </div>
@@ -417,6 +420,104 @@ const Dashboard = ({
                       </div>
                     ))}
                   </div>
+                  {/* View Assignment Modal */}
+                  {selectedAssignment && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center p-6 border-b">
+                          <h2 className="text-2xl font-bold text-gray-800">
+                            {selectedAssignment.title}
+                          </h2>
+                          <button
+                            onClick={() => setSelectedAssignment(null)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="w-6 h-6" />
+                          </button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                          <div className="flex flex-wrap gap-2">
+                            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                              {selectedAssignment.subject}
+                            </span>
+                            {selectedAssignment.aiGenerated && (
+                              <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium flex items-center gap-1">
+                                <Brain className="w-3 h-3" /> AI Generated
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-gray-600">Due Date</p>
+                              <p className="font-medium">
+                                {selectedAssignment.dueDate}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-gray-600">Questions</p>
+                              <p className="font-medium">
+                                {selectedAssignment.questions}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-gray-600">Status</p>
+                              <p
+                                className={`font-medium ${
+                                  selectedAssignment.status === "completed"
+                                    ? "text-green-600"
+                                    : "text-yellow-600"
+                                }`}
+                              >
+                                {selectedAssignment.status === "completed"
+                                  ? "Completed"
+                                  : "Not Started"}
+                              </p>
+                            </div>
+                            {selectedAssignment.grade && (
+                              <div>
+                                <p className="text-gray-600">Grade</p>
+                                <p className="font-medium text-green-600">
+                                  {selectedAssignment.grade}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="pt-4">
+                            <p className="text-gray-700">
+                              This assignment was generated by EduAI to help you
+                              master key concepts in{" "}
+                              {selectedAssignment.subject}. Complete all
+                              questions to receive instant feedback and grading.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="p-6 border-t flex justify-end gap-3">
+                          <button
+                            onClick={() => setSelectedAssignment(null)}
+                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                          >
+                            Close
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedAssignment(null);
+                              // We'll handle navigation in Part 2
+                              window.location.href = `/assignment/${selectedAssignment.id}`;
+                            }}
+                            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 font-medium"
+                          >
+                            {selectedAssignment.status === "completed"
+                              ? "Review"
+                              : "Start Assignment"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
