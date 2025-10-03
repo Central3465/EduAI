@@ -1,161 +1,96 @@
 // src/pages/AssignmentPage.jsx
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Brain, Clock, CheckCircle, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Brain, Clock, BookOpen, CheckCircle, X } from 'lucide-react';
 import Header from '../components/layout/Header';
 
-const AssignmentPage = ({
-  assignments,
-  currentUser,
-  userRole,
-  logout,
-  setAssignments // needed to update status/grade after submission
-}) => {
+const AssignmentPage = ({ assignments, currentUser, userRole, logout }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const assignment = assignments.find(a => a.id === parseInt(id));
-
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [grade, setGrade] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [assignment, setAssignment] = useState(null);
 
-  // Mock questions (in real app, these would come from your backend)
-  const mockQuestions = [
-    {
-      id: 1,
-      type: 'multiple-choice',
-      question: 'What is the primary goal of machine learning?',
-      options: [
-        'To replace human decision-making entirely',
-        'To enable computers to learn from data without explicit programming',
-        'To create artificial consciousness',
-        'To optimize database queries'
-      ],
-      correctAnswer: 1
-    },
-    {
-      id: 2,
-      type: 'short-answer',
-      question: 'Explain the difference between supervised and unsupervised learning in one sentence.',
-      correctAnswer: 'Supervised learning uses labeled data, while unsupervised learning finds patterns in unlabeled data.'
-    },
-    {
-      id: 3,
-      type: 'true-false',
-      question: 'Overfitting occurs when a model performs well on training data but poorly on new data.',
-      correctAnswer: true
-    }
-  ];
-
+  // Find the assignment safely
   useEffect(() => {
-    if (!assignment) {
-      navigate('/dashboard');
+    if (!assignments || assignments.length === 0) {
+      setLoading(false);
+      return;
     }
-  }, [assignment, navigate]);
 
-  if (!assignment) return null;
+    const foundAssignment = assignments.find(assignment => assignment.id === parseInt(id));
+    
+    if (!foundAssignment) {
+      console.error(`Assignment with id ${id} not found`);
+      setLoading(false);
+      return;
+    }
 
-  const handleAnswerChange = (questionId, value) => {
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
+    setAssignment(foundAssignment);
+    setLoading(false);
+  }, [assignments, id]);
+
+  const handleAnswerChange = (questionId, answer) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
   };
 
-  const handleSubmit = async () => {
-    // In real app: send answers to backend for AI grading
-    const mockGrade = "A"; // Simulate AI grading result
-    setGrade(mockGrade);
+  const handleSubmit = () => {
+    // TODO: Implement actual submission logic
+    console.log('Submitting answers:', answers);
     setIsSubmitted(true);
+    
+    // Simulate saving to backend
+    setTimeout(() => {
+      navigate('/dashboard'); // Redirect to dashboard after submission
+    }, 2000);
+  };
 
-    // Update assignment in parent state
-    const updatedAssignments = assignments.map(a =>
-      a.id === assignment.id
-        ? { ...a, status: 'completed', grade: mockGrade }
-        : a
+  const handleNextQuestion = () => {
+    if (currentQuestion < (assignment?.questions?.length || 0) - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading assignment...</p>
+        </div>
+      </div>
     );
-    setAssignments(updatedAssignments);
+  }
 
-    // Optional: auto-close after 3 seconds
-    setTimeout(() => navigate('/dashboard'), 3000);
-  };
-
-  const renderQuestion = (q) => {
-    const userAnswer = answers[q.id];
-
-    if (q.type === 'multiple-choice') {
-      return (
-        <div className="space-y-3">
-          {q.options.map((option, idx) => (
-            <label key={idx} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <input
-                type="radio"
-                name={`q${q.id}`}
-                checked={userAnswer === idx}
-                onChange={() => handleAnswerChange(q.id, idx)}
-                className="w-4 h-4 text-blue-600"
-                disabled={isSubmitted}
-              />
-              <span>{option}</span>
-            </label>
-          ))}
-        </div>
-      );
-    }
-
-    if (q.type === 'short-answer') {
-      return (
-        <textarea
-          value={userAnswer || ''}
-          onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          rows="4"
-          placeholder="Type your answer here..."
-          disabled={isSubmitted}
-        />
-      );
-    }
-
-    if (q.type === 'true-false') {
-      return (
-        <div className="flex space-x-6">
-          {['True', 'False'].map((choice, idx) => (
-            <label key={choice} className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name={`q${q.id}`}
-                checked={userAnswer === (choice === 'True')}
-                onChange={() => handleAnswerChange(q.id, choice === 'True')}
-                className="w-4 h-4 text-blue-600"
-                disabled={isSubmitted}
-              />
-              <span>{choice}</span>
-            </label>
-          ))}
-        </div>
-      );
-    }
-
-    return null;
-  };
-
-  if (isSubmitted) {
+  if (!assignment) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header currentUser={currentUser} userRole={userRole} onLogout={logout} />
-        <div className="container mx-auto px-4 py-12 flex justify-center">
-          <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center max-w-md mx-auto">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Assignment Completed!</h2>
-            <p className="text-gray-600 mb-4">
-              Great job! Your assignment has been graded.
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Assignment Not Found</h2>
+            <p className="text-gray-600 mb-6">
+              The assignment you're looking for doesn't exist or you don't have access to it.
             </p>
-            <div className="text-4xl font-bold text-green-600 mb-6">{grade}</div>
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
             >
-              Back to Dashboard
+              Go to Dashboard
             </button>
           </div>
         </div>
@@ -163,8 +98,8 @@ const AssignmentPage = ({
     );
   }
 
-  const question = mockQuestions[currentQuestion];
-  const progress = ((currentQuestion) / mockQuestions.length) * 100;
+  const questions = assignment.questions || [];
+  const currentQ = questions[currentQuestion];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -172,85 +107,141 @@ const AssignmentPage = ({
       
       <div className="container mx-auto px-4 py-8">
         {/* Assignment Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex justify-between items-start">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">{assignment.title}</h1>
-              <p className="text-gray-600">{assignment.subject}</p>
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                {assignment.title}
+              </h1>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                  {assignment.subject}
+                </span>
+                {assignment.aiGenerated && (
+                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium flex items-center gap-1">
+                    <Brain className="w-3 h-3" />
+                    AI Generated
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-              <Brain className="w-4 h-4" />
-              <span>AI Assignment</span>
+            <div className="text-right">
+              <div className="text-sm text-gray-600">Due: {assignment.dueDate}</div>
+              <div className="flex items-center justify-end gap-4 mt-2">
+                <div className="flex items-center gap-1 text-sm text-gray-600">
+                  <Clock className="w-4 h-4" />
+                  <span>60 minutes</span>
+                </div>
+                <div className="flex items-center gap-1 text-sm text-gray-600">
+                  <BookOpen className="w-4 h-4" />
+                  <span>{questions.length} questions</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="mt-4 flex items-center text-sm text-gray-500">
-            <Clock className="w-4 h-4 mr-1" />
-            <span>{assignment.questions} questions • Due {assignment.dueDate}</span>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
-            <span>Question {currentQuestion + 1} of {mockQuestions.length}</span>
-            <span>{Math.round(progress)}% Complete</span>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700">
+              Question {currentQuestion + 1} of {questions.length}
+            </span>
+            <span className="text-sm text-gray-600">
+              {Math.round(((currentQuestion + 1) / questions.length) * 100)}% Complete
+            </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2.5 rounded-full"
-              style={{ width: `${progress}%` }}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
             ></div>
           </div>
         </div>
 
-        {/* Question */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            {question.question}
-          </h3>
-          {renderQuestion(question)}
-        </div>
-
-        {/* Navigation */}
-        <div className="flex justify-between">
-          <button
-            onClick={() => currentQuestion > 0 && setCurrentQuestion(currentQuestion - 1)}
-            disabled={currentQuestion === 0}
-            className={`px-4 py-2 rounded-lg ${
-              currentQuestion === 0
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            Previous
-          </button>
-
-          {currentQuestion < mockQuestions.length - 1 ? (
+        {/* Question Content */}
+        {isSubmitted ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Assignment Submitted!</h2>
+            <p className="text-gray-600 mb-6">
+              Your answers have been successfully submitted. You'll receive your results shortly.
+            </p>
             <button
-              onClick={() => setCurrentQuestion(currentQuestion + 1)}
-              disabled={answers[question.id] === undefined}
-              className={`px-4 py-2 rounded-lg ${
-                answers[question.id] === undefined
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+              onClick={() => navigate('/dashboard')}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
             >
-              Next
+              Back to Dashboard
             </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={Object.keys(answers).length < mockQuestions.length}
-              className={`px-6 py-2 rounded-lg font-medium ${
-                Object.keys(answers).length < mockQuestions.length
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-500 to-teal-600 text-white hover:from-green-600 hover:to-teal-700'
-              }`}
-            >
-              Submit Assignment
-            </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            {currentQ && (
+              <>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    {currentQ.question}
+                  </h3>
+                  {currentQ.type === 'multiple-choice' && (
+                    <div className="space-y-3">
+                      {currentQ.options?.map((option, index) => (
+                        <label key={index} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`question-${currentQ.id}`}
+                            value={option}
+                            checked={answers[currentQ.id] === option}
+                            onChange={(e) => handleAnswerChange(currentQ.id, e.target.value)}
+                            className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-gray-700">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {currentQ.type === 'short-answer' && (
+                    <textarea
+                      value={answers[currentQ.id] || ''}
+                      onChange={(e) => handleAnswerChange(currentQ.id, e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[120px]"
+                      placeholder="Type your answer here..."
+                    />
+                  )}
+                </div>
+
+                <div className="flex justify-between">
+                  <button
+                    onClick={handlePreviousQuestion}
+                    disabled={currentQuestion === 0}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Previous
+                  </button>
+                  
+                  {currentQuestion === questions.length - 1 ? (
+                    <button
+                      onClick={handleSubmit}
+                      disabled={!answers[currentQ.id]}
+                      className="px-6 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      Submit Assignment
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleNextQuestion}
+                      disabled={!answers[currentQ.id]}
+                      className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      Next Question
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

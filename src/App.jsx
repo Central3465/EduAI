@@ -7,6 +7,28 @@ import RequestAccessPage from './pages/RequestAccessPage';
 import TeacherRegistrationPage from './pages/TeacherRegistrationPage';
 import StudentRegistrationPage from './pages/StudentRegistrationPage';
 import Dashboard from './pages/Dashboard';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import RouteErrorElement from './components/ui/RouteErrorElement';
+import AssignmentPage from './pages/AssignmentPage';
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <LandingPage />,
+    errorElement: <RouteErrorElement />,
+  },
+  {
+    path: "/teacher-login",
+    element: <TeacherLoginPage />,
+    errorElement: <RouteErrorElement />,
+  },
+  {
+    path: "/student-login",
+    element: <StudentLoginPage />,
+    errorElement: <RouteErrorElement />,
+  },
+  // ... other routes
+]);
 
 const App = () => {
   const [currentView, setCurrentView] = useState('landing');
@@ -179,7 +201,6 @@ const App = () => {
       logout={logout}
     />
   );
-
   return <LandingPage setCurrentView={setCurrentView} />;
 };
 
