@@ -1,33 +1,32 @@
 // src/pages/TeacherLoginPage.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 // Import navigation hook from React Router
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 // Import our global app state (like accessCode, setAccessCode, etc.)
-import { useAppContext } from '../context/AppContext';
+import { useAppContext } from "../context/AppContext";
 
 // Import icons for UI
-import { 
-  Lock, 
+import {
+  Lock,
   ChevronRight,
   ExternalLink,
   User,
   Key,
   Mail as MailIcon,
-  LogIn 
-} from 'lucide-react';
+  LogIn,
+} from "lucide-react";
 
 // 🚫 NO PROPS! We don't receive anything from parent anymore.
 // In React Router, pages are rendered directly — no props passed.
 // Instead, we get shared data from context (useAppContext).
 const TeacherLoginPage = () => {
-  
   // Local state for the login form (email, password, etc.)
   const [showLoginForm, setShowLoginForm] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
   // Hook to navigate to other pages (like /teacher-registration)
@@ -36,12 +35,13 @@ const TeacherLoginPage = () => {
   // Get shared state and functions from our AppContext
   // These replace the old props like `accessCode`, `setAccessCode`, etc.
   const { accessCode, setAccessCode } = useAppContext();
+  const { setCurrentUser, setUserRole } = useAppContext();
 
   // 💡 When the component loads, check if teacher was remembered
   useEffect(() => {
-    const savedEmail = localStorage.getItem('teacherEmail');
-    const savedRemember = localStorage.getItem('teacherRemember') === 'true';
-    
+    const savedEmail = localStorage.getItem("teacherEmail");
+    const savedRemember = localStorage.getItem("teacherRemember") === "true";
+
     if (savedEmail && savedRemember) {
       setEmail(savedEmail);
       setRememberMe(true);
@@ -54,40 +54,43 @@ const TeacherLoginPage = () => {
     e.preventDefault(); // Prevent page refresh
 
     // Check if the access code is correct
-    if (accessCode === 'TEACHER2024') {
+    if (accessCode === "TEACHER2024") {
       // ✅ Valid code → go to registration page
-      navigate('/teacher-registration');
+      navigate("/teacher-registration");
     } else {
       // ❌ Invalid code → show error
-      alert('Invalid access code. Please try again.');
+      alert("Invalid access code. Please try again.");
     }
   };
 
-  // 📥 Handle email/password login (for returning teachers)
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    
+
     // Save email if "Remember me" is checked
     if (rememberMe) {
-      localStorage.setItem('teacherEmail', email);
-      localStorage.setItem('teacherRemember', 'true');
+      localStorage.setItem("teacherEmail", email);
+      localStorage.setItem("teacherRemember", "true");
     } else {
-      localStorage.removeItem('teacherEmail');
-      localStorage.removeItem('teacherRemember');
+      localStorage.removeItem("teacherEmail");
+      localStorage.removeItem("teacherRemember");
     }
 
-    console.log('Login attempt with:', { email, password });
-    // TODO: In a real app, you'd call an API here
-    // For now, just go to dashboard
-    navigate('/dashboard');
+    console.log("Login attempt with:", { email, password });
+
+    // ✅ Set user role and data in context
+    setUserRole("teacher");
+    setCurrentUser({ name: "Mr. Hanlin Bai", email }); // Use real name if available
+
+    // ✅ Navigate to dashboard (it will now know you're a teacher)
+    navigate("/dashboard");
   };
 
   // 🚪 Log out (clear saved data and go back to access code screen)
   const handleLogout = () => {
-    localStorage.removeItem('teacherEmail');
-    localStorage.removeItem('teacherRemember');
-    setEmail('');
-    setPassword('');
+    localStorage.removeItem("teacherEmail");
+    localStorage.removeItem("teacherRemember");
+    setEmail("");
+    setPassword("");
     setShowLoginForm(false); // Go back to access code form
   };
 
@@ -95,7 +98,6 @@ const TeacherLoginPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        
         {/* Show login form if teacher is returning */}
         {showLoginForm ? (
           <>
@@ -103,13 +105,17 @@ const TeacherLoginPage = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <User className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back, Teacher!</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Welcome Back, Teacher!
+              </h2>
               <p className="text-gray-600">Sign in to your account</p>
             </div>
-            
+
             <form onSubmit={handleLoginSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
                 <div className="relative">
                   <MailIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                   <input
@@ -122,9 +128,11 @@ const TeacherLoginPage = () => {
                   />
                 </div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
                 <div className="relative">
                   <Key className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                   <input
@@ -137,7 +145,7 @@ const TeacherLoginPage = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input
@@ -146,9 +154,11 @@ const TeacherLoginPage = () => {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                  <span className="ml-2 text-sm text-gray-600">
+                    Remember me
+                  </span>
                 </label>
-                <button 
+                <button
                   type="button"
                   onClick={handleLogout}
                   className="text-sm text-blue-600 hover:text-blue-800"
@@ -156,7 +166,7 @@ const TeacherLoginPage = () => {
                   Use access code
                 </button>
               </div>
-              
+
               <button
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all"
@@ -172,14 +182,20 @@ const TeacherLoginPage = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Lock className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Teacher Access</h2>
-              <p className="text-gray-600">Enter your invite code to get started</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Teacher Access
+              </h2>
+              <p className="text-gray-600">
+                Enter your invite code to get started
+              </p>
             </div>
-            
+
             {/* This form uses the accessCode from context */}
             <form onSubmit={handleAccessCodeSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Access Code</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Access Code
+                </label>
                 <input
                   type="password"
                   // ✅ `accessCode` comes from context (not props!)
@@ -198,20 +214,22 @@ const TeacherLoginPage = () => {
                 Continue
               </button>
             </form>
-            
+
             {/* Helper links */}
             <div className="mt-6 text-center space-y-4">
-              <p className="text-gray-600 text-sm">Don't have an access code?</p>
-              <button 
-                onClick={() => navigate('/request-access')}
+              <p className="text-gray-600 text-sm">
+                Don't have an access code?
+              </p>
+              <button
+                onClick={() => navigate("/request-access")}
                 className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center mx-auto"
               >
                 <ExternalLink className="w-4 h-4 mr-1" />
                 Request Access
               </button>
-              
+
               <div className="pt-2">
-                <button 
+                <button
                   onClick={() => setShowLoginForm(true)}
                   className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center mx-auto"
                 >
@@ -219,9 +237,9 @@ const TeacherLoginPage = () => {
                   Already have an account? Sign in
                 </button>
               </div>
-              
-              <button 
-                onClick={() => navigate('/')}
+
+              <button
+                onClick={() => navigate("/")}
                 className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
               >
                 <ChevronRight className="w-4 h-4 mr-1" />

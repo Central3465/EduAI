@@ -1,7 +1,7 @@
 // src/pages/TeacherRegistrationPage.jsx
 
 import { User, Mail as MailIcon, Key, ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // ✅ Import the custom hook (not as a prop!)
@@ -20,12 +20,8 @@ const TeacherRegistrationPage = () => {
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
-
-  // ✅ Get navigation function
   const navigate = useNavigate();
-
-  // ✅ CALL THE HOOK to get context values
-  const { handleTeacherRegistration } = useAppContext();
+  const { handleTeacherRegistration, userRole } = useAppContext(); // ✅ Get userRole too
 
   const validateForm = () => {
     const newErrors = {};
@@ -46,21 +42,16 @@ const TeacherRegistrationPage = () => {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+  e.preventDefault();
+  const validationErrors = validateForm();
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
 
-    // ✅ Now this works! handleTeacherRegistration is a real function
-    handleTeacherRegistration(formData);
-
-    // Optional: navigate after registration (you could also do this inside the context)
-    // But usually, the context function handles navigation, or you do it here.
-    // Since your context doesn't navigate, let's do it here:
-    navigate('/dashboard');
-  };
+  // ✅ Pass navigate function
+  handleTeacherRegistration(formData, navigate);
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">

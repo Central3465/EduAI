@@ -18,6 +18,7 @@ const StudentLoginPage = ({ invitationCode, setInvitationCode, handleInvitationC
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const { setCurrentUser, setUserRole } = useAppContext();
 
   // Check if user has saved credentials
   useEffect(() => {
@@ -41,7 +42,12 @@ const StudentLoginPage = ({ invitationCode, setInvitationCode, handleInvitationC
       localStorage.removeItem('studentEmail');
       localStorage.removeItem('studentRemember');
     }
-    // TODO: Implement actual login logic
+    // ✅ Set user role and data
+    setUserRole('student');
+    setCurrentUser({ name: 'John Doe', email }); // Use real data
+
+    // ✅ Navigate to dashboard
+    navigate('/dashboard');
     console.log('Login attempt with:', { email, password });
   };
 
