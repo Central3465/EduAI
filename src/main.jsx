@@ -1,18 +1,55 @@
 // main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import App from './App';
+import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, Outlet } from 'react-router-dom';
+import { AppProvider } from './context/AppContext';
+
+// Pages
+import LandingPage from './pages/LandingPage';
+import TeacherLoginPage from './pages/TeacherLoginPage';
+import StudentLoginPage from './pages/StudentLoginPage';
+import RequestAccessPage from './pages/RequestAccessPage';
+import TeacherRegistrationPage from './pages/TeacherRegistrationPage';
+import StudentRegistrationPage from './pages/StudentRegistrationPage';
+import Dashboard from './pages/Dashboard';
 import AssignmentPage from './pages/AssignmentPage';
-import './index.css'
+import RouteErrorElement from './components/ui/RouteErrorElement';
+import ProtectedRoute from './components/ui/ProtectedRoute'; // ✅ Correct path
+
+import './index.css';
+
+// ✅ Define a layout component that wraps children with AppProvider AND renders Outlet
+const RootLayout = () => {
+  return (
+    <AppProvider>
+      <Outlet /> {/* This renders the matched child route */}
+    </AppProvider>
+  );
+};
 
 const router = createBrowserRouter(
-  [
-    { path: '/', element: <App /> },
-    { path: '/assignment/:id', element: <AssignmentPage /> },
-  ],
+  createRoutesFromElements(
+    <Route path="/" element={<RootLayout />} errorElement={<RouteErrorElement />}>
+      {/* Public routes */}
+      <Route index element={<LandingPage />} />
+      <Route path="teacher-login" element={<TeacherLoginPage />} />
+      <Route path="student-login" element={<StudentLoginPage />} />
+      <Route path="request-access" element={<RequestAccessPage />} />
+      <Route path="teacher-registration" element={<TeacherRegistrationPage />} />
+      <Route path="student-registration" element={<StudentRegistrationPage />} />
+
+      {/* 🔒 Protected routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="assignment/:id" element={<AssignmentPage />} />
+      </Route>
+
+      {/* Fallback for unknown routes */}
+      <Route path="*" element={<LandingPage />} />
+    </Route>
+  ),
   {
-    basename: '/EduAI', // matches Vite's `base` (note: no trailing slash)
+    basename: '/EduAI',
   }
 );
 

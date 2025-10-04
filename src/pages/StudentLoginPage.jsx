@@ -1,5 +1,7 @@
 // StudentLoginPage.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
 import { motion } from "framer-motion";
 import { 
   Mail,
@@ -10,11 +12,12 @@ import {
   LogIn
 } from 'lucide-react';
 
-const StudentLoginPage = ({ setCurrentView, invitationCode, setInvitationCode, handleInvitationCodeSubmit }) => {
+const StudentLoginPage = ({ invitationCode, setInvitationCode, handleInvitationCodeSubmit }) => {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
 
   // Check if user has saved credentials
   useEffect(() => {
@@ -172,7 +175,7 @@ const StudentLoginPage = ({ setCurrentView, invitationCode, setInvitationCode, h
               </div>
               
               <button 
-                onClick={() => setCurrentView('landing')}
+                onClick={() => navigate('/')}
                 className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
               >
                 <ChevronRight className="w-4 h-4 mr-1" />

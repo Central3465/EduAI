@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
 import { 
   Users, 
   BookOpen, 
@@ -30,7 +32,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
-const StudentRegistrationPage = ({ setCurrentView, onRegister, invitationCode }) => {
+const StudentRegistrationPage = ({ onRegister, invitationCode }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -38,6 +40,7 @@ const StudentRegistrationPage = ({ setCurrentView, onRegister, invitationCode })
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
@@ -161,7 +164,7 @@ const StudentRegistrationPage = ({ setCurrentView, onRegister, invitationCode })
         
         <div className="mt-6 text-center">
           <button 
-            onClick={() => setCurrentView('student-login')}
+            onClick={() => navigate('/student-login')}
             className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
           >
             <ChevronRight className="w-4 h-4 mr-1" />

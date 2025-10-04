@@ -1,14 +1,31 @@
+// src/pages/TeacherRegistrationPage.jsx
+
 import { User, Mail as MailIcon, Key, ChevronRight } from 'lucide-react';
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+// ✅ Import the custom hook (not as a prop!)
+import { useAppContext } from '../context/AppContext';
+
 import { motion } from "framer-motion";
 
-const TeacherRegistrationPage = ({ setCurrentView, onRegister }) => {
+// ❌ NEVER put `useAppContext` in props like this:
+// const TeacherRegistrationPage = ({ useAppContext }) => {
+
+// ✅ Correct: no props, and we'll call the hook inside
+const TeacherRegistrationPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
+
+  // ✅ Get navigation function
+  const navigate = useNavigate();
+
+  // ✅ CALL THE HOOK to get context values
+  const { handleTeacherRegistration } = useAppContext();
 
   const validateForm = () => {
     const newErrors = {};
@@ -35,7 +52,14 @@ const TeacherRegistrationPage = ({ setCurrentView, onRegister }) => {
       setErrors(validationErrors);
       return;
     }
-    onRegister(formData);
+
+    // ✅ Now this works! handleTeacherRegistration is a real function
+    handleTeacherRegistration(formData);
+
+    // Optional: navigate after registration (you could also do this inside the context)
+    // But usually, the context function handles navigation, or you do it here.
+    // Since your context doesn't navigate, let's do it here:
+    navigate('/dashboard');
   };
 
   return (
@@ -114,7 +138,7 @@ const TeacherRegistrationPage = ({ setCurrentView, onRegister }) => {
         
         <div className="mt-6 text-center">
           <button 
-            onClick={() => setCurrentView('teacher-login')}
+            onClick={() => navigate('/teacher-login')}
             className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
           >
             <ChevronRight className="w-4 h-4 mr-1" />

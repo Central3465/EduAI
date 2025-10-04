@@ -1,6 +1,14 @@
-// TeacherLoginPage.jsx
+// src/pages/TeacherLoginPage.jsx
+
 import React, { useState, useEffect } from 'react';
-import { motion } from "framer-motion";
+
+// Import navigation hook from React Router
+import { useNavigate } from 'react-router-dom';
+
+// Import our global app state (like accessCode, setAccessCode, etc.)
+import { useAppContext } from '../context/AppContext';
+
+// Import icons for UI
 import { 
   Lock, 
   ChevronRight,
@@ -8,16 +16,28 @@ import {
   User,
   Key,
   Mail as MailIcon,
-  LogIn
+  LogIn 
 } from 'lucide-react';
 
-const TeacherLoginPage = ({ setCurrentView, accessCode, setAccessCode, handleAccessCodeSubmit }) => {
+// 🚫 NO PROPS! We don't receive anything from parent anymore.
+// In React Router, pages are rendered directly — no props passed.
+// Instead, we get shared data from context (useAppContext).
+const TeacherLoginPage = () => {
+  
+  // Local state for the login form (email, password, etc.)
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
-  // Check if user has saved credentials
+  // Hook to navigate to other pages (like /teacher-registration)
+  const navigate = useNavigate();
+
+  // Get shared state and functions from our AppContext
+  // These replace the old props like `accessCode`, `setAccessCode`, etc.
+  const { accessCode, setAccessCode } = useAppContext();
+
+  // 💡 When the component loads, check if teacher was remembered
   useEffect(() => {
     const savedEmail = localStorage.getItem('teacherEmail');
     const savedRemember = localStorage.getItem('teacherRemember') === 'true';
@@ -25,13 +45,29 @@ const TeacherLoginPage = ({ setCurrentView, accessCode, setAccessCode, handleAcc
     if (savedEmail && savedRemember) {
       setEmail(savedEmail);
       setRememberMe(true);
-      setShowLoginForm(true);
+      setShowLoginForm(true); // Show login form instead of access code form
     }
-  }, []);
+  }, []); // Empty dependency array = run only once on mount
 
+  // 🔐 Handle form submission for the ACCESS CODE (not email/password yet)
+  const handleAccessCodeSubmit = (e) => {
+    e.preventDefault(); // Prevent page refresh
+
+    // Check if the access code is correct
+    if (accessCode === 'TEACHER2024') {
+      // ✅ Valid code → go to registration page
+      navigate('/teacher-registration');
+    } else {
+      // ❌ Invalid code → show error
+      alert('Invalid access code. Please try again.');
+    }
+  };
+
+  // 📥 Handle email/password login (for returning teachers)
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    // Save credentials if remember me is checked
+    
+    // Save email if "Remember me" is checked
     if (rememberMe) {
       localStorage.setItem('teacherEmail', email);
       localStorage.setItem('teacherRemember', 'true');
@@ -39,23 +75,29 @@ const TeacherLoginPage = ({ setCurrentView, accessCode, setAccessCode, handleAcc
       localStorage.removeItem('teacherEmail');
       localStorage.removeItem('teacherRemember');
     }
-    // TODO: Implement actual login logic
+
     console.log('Login attempt with:', { email, password });
+    // TODO: In a real app, you'd call an API here
+    // For now, just go to dashboard
+    navigate('/dashboard');
   };
 
+  // 🚪 Log out (clear saved data and go back to access code screen)
   const handleLogout = () => {
     localStorage.removeItem('teacherEmail');
     localStorage.removeItem('teacherRemember');
     setEmail('');
     setPassword('');
-    setShowLoginForm(false);
+    setShowLoginForm(false); // Go back to access code form
   };
 
+  // 🖼️ Render either the access code form OR the email login form
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+        
+        {/* Show login form if teacher is returning */}
         {showLoginForm ? (
-          // Login Form for returning users
           <>
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -124,7 +166,7 @@ const TeacherLoginPage = ({ setCurrentView, accessCode, setAccessCode, handleAcc
             </form>
           </>
         ) : (
-          // Original access code form
+          // 🔑 Show access code form for new teachers
           <>
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -134,12 +176,15 @@ const TeacherLoginPage = ({ setCurrentView, accessCode, setAccessCode, handleAcc
               <p className="text-gray-600">Enter your invite code to get started</p>
             </div>
             
+            {/* This form uses the accessCode from context */}
             <form onSubmit={handleAccessCodeSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Access Code</label>
                 <input
                   type="password"
+                  // ✅ `accessCode` comes from context (not props!)
                   value={accessCode}
+                  // ✅ `setAccessCode` is a real function from context
                   onChange={(e) => setAccessCode(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter your access code"
@@ -154,17 +199,17 @@ const TeacherLoginPage = ({ setCurrentView, accessCode, setAccessCode, handleAcc
               </button>
             </form>
             
+            {/* Helper links */}
             <div className="mt-6 text-center space-y-4">
               <p className="text-gray-600 text-sm">Don't have an access code?</p>
               <button 
-                onClick={() => setCurrentView('request-access')}
+                onClick={() => navigate('/request-access')}
                 className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center mx-auto"
               >
                 <ExternalLink className="w-4 h-4 mr-1" />
                 Request Access
               </button>
               
-              {/* New button for returning users */}
               <div className="pt-2">
                 <button 
                   onClick={() => setShowLoginForm(true)}
@@ -176,7 +221,7 @@ const TeacherLoginPage = ({ setCurrentView, accessCode, setAccessCode, handleAcc
               </div>
               
               <button 
-                onClick={() => setCurrentView('landing')}
+                onClick={() => navigate('/')}
                 className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
               >
                 <ChevronRight className="w-4 h-4 mr-1" />

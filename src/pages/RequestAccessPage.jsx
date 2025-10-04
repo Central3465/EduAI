@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
 import { 
   Users, 
   BookOpen, 
@@ -30,7 +32,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
-const RequestAccessPage = ({ setCurrentView }) => {
+const RequestAccessPage = ({  }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -40,6 +42,7 @@ const RequestAccessPage = ({ setCurrentView }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -149,7 +152,7 @@ const RequestAccessPage = ({ setCurrentView }) => {
         
         <div className="mt-6 text-center">
           <button 
-            onClick={() => setCurrentView('landing')}
+            onClick={() => navigate('/')}
             className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
           >
             <ChevronRight className="w-4 h-4 mr-1" />
