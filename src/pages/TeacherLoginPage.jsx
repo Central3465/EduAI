@@ -77,11 +77,11 @@ const TeacherLoginPage = () => {
 
     console.log("Login attempt with:", { email, password });
 
-    // ✅ Set user role and data in context
+    // Set user role and data in context
     setUserRole("teacher");
-    setCurrentUser({ name: "Mr. Hanlin Bai", email }); // Use real name if available
+    setCurrentUser({ name: "Mr. Hanlin Bai", email }); 
 
-    // ✅ Navigate to dashboard (it will now know you're a teacher)
+    // Navigate to dashboard (it will now know you're a teacher)
     navigate("/dashboard");
   };
 

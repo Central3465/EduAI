@@ -1,18 +1,16 @@
 // src/components/ui/RouteErrorElement.jsx
-import React, { useState } from 'react';
-import { Link, useRouteError } from 'react-router-dom'; // ✅ Import useRouteError
+import React from 'react';
+import { Link, useRouteError } from 'react-router-dom';
 import { AlertTriangle, Home, RefreshCw, Mail, Copy } from 'lucide-react';
 
 const RouteErrorElement = () => {
-  // ✅ Get error using hook — NOT from props
   const error = useRouteError();
 
-  // Format full error text
   const fullErrorText = error
     ? `${error.status ? `[${error.status}] ` : ''}${error.statusText || error.message || 'Unknown error'}\n\nStack trace:\n${error.stack || 'No stack trace available'}`
     : 'No error details available';
 
-  const [copySuccess, setCopySuccess] = useState(false);
+  const [copySuccess, setCopySuccess] = React.useState(false);
 
   const handleCopy = async () => {
     try {
@@ -21,7 +19,6 @@ const RouteErrorElement = () => {
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
-      // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = fullErrorText;
       document.body.appendChild(textArea);
@@ -50,10 +47,9 @@ const RouteErrorElement = () => {
 
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Oops! Something Went Wrong</h1>
         <p className="text-gray-600 mb-6">
-          Don’t worry — this isn’t your fault. Please help me fix it!
+          Don't worry — this isn't your fault. Please help me fix it!
         </p>
 
-        {/* Error Details Box */}
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 text-left relative">
           <p className="text-sm text-red-800 font-mono overflow-x-auto whitespace-pre-wrap">
             {fullErrorText}

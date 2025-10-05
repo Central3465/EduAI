@@ -1,7 +1,14 @@
-// main.jsx
+// src/main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, Outlet } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  createRoutesFromElements,
+  Route,
+  Outlet
+} from 'react-router-dom';
+import { NotificationProvider } from './context/NotificationContext'; // Import NotificationProvider
 import { AppProvider } from './context/AppContext';
 
 // Pages
@@ -14,15 +21,15 @@ import StudentRegistrationPage from './pages/StudentRegistrationPage';
 import Dashboard from './pages/Dashboard';
 import AssignmentPage from './pages/AssignmentPage';
 import RouteErrorElement from './components/ui/RouteErrorElement';
-import ProtectedRoute from './components/ui/ProtectedRoute'; // ✅ Correct path
+import ProtectedRoute from './components/ui/ProtectedRoute';
 
 import './index.css';
 
-// ✅ Define a layout component that wraps children with AppProvider AND renders Outlet
+// Root layout component
 const RootLayout = () => {
   return (
     <AppProvider>
-      <Outlet /> {/* This renders the matched child route */}
+      <Outlet />
     </AppProvider>
   );
 };
@@ -36,7 +43,7 @@ const router = createBrowserRouter(
       <Route path="student-login" element={<StudentLoginPage />} />
       <Route path="request-access" element={<RequestAccessPage />} />
       <Route path="teacher-registration" element={<TeacherRegistrationPage />} />
-      <Route path="student-registration" element={<StudentRegistrationPage />} />
+      <Route path="student-registration" element={<TeacherRegistrationPage />} />
 
       {/* 🔒 Protected routes */}
       <Route element={<ProtectedRoute />}>
@@ -53,8 +60,11 @@ const router = createBrowserRouter(
   }
 );
 
+// Wrap the entire app with NotificationProvider
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <NotificationProvider>
+      <RouterProvider router={router} />
+    </NotificationProvider>
   </React.StrictMode>
 );

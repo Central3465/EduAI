@@ -1,14 +1,32 @@
 // src/context/AppContext.jsx
-import React, { createContext, useState, useContext, useCallback, useRef } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
+
 const AppContext = createContext();
+import { NotificationProvider } from './NotificationContext';
 
 export const useAppContext = () => useContext(AppContext);
 
 export const AppProvider = ({ children }) => {
-  const [accessCode, setAccessCode] = useState("");
-  const [invitationCode, setInvitationCode] = useState("");
-  const [userRole, setUserRole] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  // Load initial state from localStorage
+  const [accessCode, setAccessCode] = useState(() => {
+    return localStorage.getItem("accessCode") || "";
+  });
+  const [invitationCode, setInvitationCode] = useState(() => {
+    return localStorage.getItem("invitationCode") || "";
+  });
+  const [userRole, setUserRole] = useState(() => {
+    return localStorage.getItem("userRole") || null; // Load role
+  });
+  const [currentUser, setCurrentUser] = useState(() => {
+    const user = localStorage.getItem("currentUser");
+    return user ? JSON.parse(user) : null; // Load user
+  });
   const [assignments, setAssignments] = useState([
     {
       id: 1,
@@ -33,6 +51,9 @@ export const AppProvider = ({ children }) => {
       grade: "B+",
     },
   ]);
+  React.useEffect(() => {
+    localStorage.setItem("assignments", JSON.stringify(assignments));
+  }, [assignments]);
   const [students, setStudents] = useState([
     {
       id: 1,
@@ -63,6 +84,31 @@ export const AppProvider = ({ children }) => {
     questionCount: 5,
   });
   const [tempUserData, setTempUserData] = useState(null);
+
+  // Save to localStorage whenever state changes
+  React.useEffect(() => {
+    if (accessCode) localStorage.setItem("accessCode", accessCode);
+  }, [accessCode]);
+
+  React.useEffect(() => {
+    if (invitationCode) localStorage.setItem("invitationCode", invitationCode);
+  }, [invitationCode]);
+
+  React.useEffect(() => {
+    if (userRole) {
+      localStorage.setItem("userRole", userRole);
+    } else {
+      localStorage.removeItem("userRole"); // Clear if null
+    }
+  }, [userRole]);
+
+  React.useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem("currentUser"); // Clear if null
+    }
+  }, [currentUser]);
 
   // Temporary data store for user accounts
   const userStore = React.useRef(new Map());
@@ -95,27 +141,25 @@ export const AppProvider = ({ children }) => {
     [invitationCode]
   );
 
-  const handleTeacherRegistration = useCallback((userData, navigate) => {
-  console.log('handleTeacherRegistration called with:', userData);
+  const handleTeacherRegistration = useCallback(
+    (userData) => {
+      const userId = Date.now().toString();
+      userStore.current.set(userId, {
+        id: userId,
+        email: userData.email,
+        password: userData.password,
+        accessCode: tempUserData?.accessCode,
+        createdAt: new Date().toISOString(),
+        role: "teacher",
+      });
 
-  const userId = Date.now().toString();
-  userStore.current.set(userId, {
-    id: userId,
-    email: userData.email,
-    password: userData.password,
-    accessCode: tempUserData?.accessCode,
-    createdAt: new Date().toISOString(),
-    role: 'teacher'
-  });
-
-  setUserRole('teacher');
-  setCurrentUser({ name: 'Dr. Sarah Chen', email: userData.email });
-
-  // ✅ Navigate after state is set
-  if (navigate) {
-    navigate('/dashboard');
-  }
-}, [tempUserData]);
+      // set role and user (this will now persist to localStorage)
+      setUserRole("teacher");
+      setCurrentUser({ name: "Dr. Sarah Chen", email: userData.email });
+      // Navigation handled by component
+    },
+    [tempUserData]
+  );
 
   const handleStudentRegistration = useCallback((userData) => {
     const userId = Date.now().toString();
@@ -163,6 +207,7 @@ export const AppProvider = ({ children }) => {
   }, [assignments.length, newAssignment]);
 
   return (
+    <NotificationProvider>
     <AppContext.Provider
       value={{
         accessCode,
@@ -192,5 +237,6 @@ export const AppProvider = ({ children }) => {
     >
       {children}
     </AppContext.Provider>
+    </NotificationProvider>
   );
 };
