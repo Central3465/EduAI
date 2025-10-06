@@ -1,50 +1,31 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { motion } from "framer-motion";
+// src/pages/StudentRegistrationPage.jsx
+import { User, Mail as MailIcon, Key, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { 
-  Users, 
-  BookOpen, 
-  Plus, 
-  MessageSquare, 
-  GraduationCap, 
-  Lock, 
-  Mail,
-  Brain,
-  CheckCircle,
-  TrendingUp,
-  Award,
-  Calendar,
-  FileText,
-  Eye,
-  Edit3,
-  Trash2,
-  ChevronRight,
-  X,
-  Send,
-  User,
-  Key,
-  Mail as MailIcon,
-  ExternalLink,
-  Home,
-  BarChart3,
-  FileText as FileTextIcon,
-  Settings,
-  LogOut
-} from 'lucide-react';
-const StudentRegistrationPage = ({ onRegister, invitationCode }) => {
+import { useNotification } from '../context/NotificationContext';
+import { motion } from "framer-motion";
+
+const StudentRegistrationPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    invitationCode: ''
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+  
+  // ✅ Use handleStudentRegistration instead of handleTeacherRegistration
+  const { handleStudentRegistration } = useAppContext();
+  const { showSuccess, showError } = useNotification();
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name) {
+    if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     }
     if (!formData.email) {
@@ -60,17 +41,34 @@ const StudentRegistrationPage = ({ onRegister, invitationCode }) => {
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
+    if (!formData.invitationCode.trim()) {
+      newErrors.invitationCode = 'Invitation code is required';
+    }
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    onRegister({ ...formData, invitationCode });
+
+    setLoading(true);
+    
+    // ✅ Call handleStudentRegistration instead of handleTeacherRegistration
+    const result = handleStudentRegistration(formData);
+    
+    if (result.success) {
+      showSuccess(result.message);
+      // Redirect after verification
+      setTimeout(() => navigate('/student-login'), 2000);
+    } else {
+      showError(result.message);
+    }
+    
+    setLoading(false);
   };
 
   return (
@@ -87,19 +85,22 @@ const StudentRegistrationPage = ({ onRegister, invitationCode }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.name ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Enter your full name"
-              required
-            />
+            <div className="relative">
+              <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                className={`w-full pl-10 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
             <div className="relative">
@@ -153,12 +154,35 @@ const StudentRegistrationPage = ({ onRegister, invitationCode }) => {
             </div>
             {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Invitation Code</label>
+            <input
+              type="text"
+              value={formData.invitationCode}
+              onChange={(e) => setFormData({...formData, invitationCode: e.target.value})}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.invitationCode ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter your invitation code"
+              required
+            />
+            {errors.invitationCode && <p className="text-red-500 text-sm mt-1">{errors.invitationCode}</p>}
+          </div>
           
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-green-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-700 transition-all"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-green-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create Account
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Creating Account...
+              </div>
+            ) : (
+              'Create Account'
+            )}
           </button>
         </form>
         
@@ -168,7 +192,7 @@ const StudentRegistrationPage = ({ onRegister, invitationCode }) => {
             className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
           >
             <ChevronRight className="w-4 h-4 mr-1" />
-            Back to invitation code
+            Back to login
           </button>
         </div>
       </div>

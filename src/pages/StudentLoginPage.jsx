@@ -1,8 +1,8 @@
-// StudentLoginPage.jsx
+// src/pages/StudentLoginPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { motion } from "framer-motion";
+import { useNotification } from '../context/NotificationContext';
 import { 
   Mail,
   ChevronRight,
@@ -12,13 +12,25 @@ import {
   LogIn
 } from 'lucide-react';
 
-const StudentLoginPage = ({ invitationCode, setInvitationCode, handleInvitationCodeSubmit }) => {
+const StudentLoginPage = () => { // ❌ Remove props
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
-  const { setCurrentUser, setUserRole } = useAppContext();
+  
+  // ✅ Get everything from context
+  const { 
+    invitationCode, 
+    setInvitationCode, 
+    setCurrentUser, 
+    setUserRole,
+    handleStudentLogin
+  } = useAppContext();
+
+  const { showSuccess, showError } = useNotification();
 
   // Check if user has saved credentials
   useEffect(() => {
@@ -32,23 +44,30 @@ const StudentLoginPage = ({ invitationCode, setInvitationCode, handleInvitationC
     }
   }, []);
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    // Save credentials if remember me is checked
-    if (rememberMe) {
-      localStorage.setItem('studentEmail', email);
-      localStorage.setItem('studentRemember', 'true');
+    setLoading(true);
+    
+    const result = handleStudentLogin(email, password);
+    
+    if (result.success) {
+      showSuccess(result.message);
+      
+      // Save credentials if remember me is checked
+      if (rememberMe) {
+        localStorage.setItem('studentEmail', email);
+        localStorage.setItem('studentRemember', 'true');
+      } else {
+        localStorage.removeItem('studentEmail');
+        localStorage.removeItem('studentRemember');
+      }
+      
+      navigate('/dashboard');
     } else {
-      localStorage.removeItem('studentEmail');
-      localStorage.removeItem('studentRemember');
+      showError(result.message);
     }
-    // ✅ Set user role and data
-    setUserRole('student');
-    setCurrentUser({ name: 'John Doe', email }); // Use real data
-
-    // ✅ Navigate to dashboard
-    navigate('/dashboard');
-    console.log('Login attempt with:', { email, password });
+    
+    setLoading(false);
   };
 
   const handleLogout = () => {
@@ -125,14 +144,22 @@ const StudentLoginPage = ({ invitationCode, setInvitationCode, handleInvitationC
               
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-green-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-700 transition-all"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-green-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign In
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Signing In...
+                  </div>
+                ) : (
+                  'Sign In'
+                )}
               </button>
             </form>
           </>
         ) : (
-          // Original invitation code form
+          // Invitation code form for new students
           <>
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -142,13 +169,20 @@ const StudentLoginPage = ({ invitationCode, setInvitationCode, handleInvitationC
               <p className="text-gray-600">Enter your invitation code to register</p>
             </div>
             
-            <form onSubmit={handleInvitationCodeSubmit} className="space-y-6">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (invitationCode === 'STUDENT2024') { // ✅ Use from context
+                navigate('/student-registration');
+              } else {
+                alert('Invalid invitation code. Please check your email for the correct code.');
+              }
+            }} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Invitation Code</label>
                 <input
                   type="text"
-                  value={invitationCode}
-                  onChange={(e) => setInvitationCode(e.target.value)}
+                  value={invitationCode} // ✅ Now comes from context
+                  onChange={(e) => setInvitationCode(e.target.value)} // ✅ Now comes from context
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter your invitation code"
                   required

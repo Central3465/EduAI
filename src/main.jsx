@@ -1,29 +1,30 @@
 // src/main.jsx
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 import {
   createBrowserRouter,
   RouterProvider,
   createRoutesFromElements,
   Route,
-  Outlet
-} from 'react-router-dom';
-import { NotificationProvider } from './context/NotificationContext'; // Import NotificationProvider
-import { AppProvider } from './context/AppContext';
+  Outlet,
+} from "react-router-dom";
+import { NotificationProvider } from "./context/NotificationContext"; // Import NotificationProvider
+import { AppProvider } from "./context/AppContext";
 
 // Pages
-import LandingPage from './pages/LandingPage';
-import TeacherLoginPage from './pages/TeacherLoginPage';
-import StudentLoginPage from './pages/StudentLoginPage';
-import RequestAccessPage from './pages/RequestAccessPage';
-import TeacherRegistrationPage from './pages/TeacherRegistrationPage';
-import StudentRegistrationPage from './pages/StudentRegistrationPage';
-import Dashboard from './pages/Dashboard';
-import AssignmentPage from './pages/AssignmentPage';
-import RouteErrorElement from './components/ui/RouteErrorElement';
-import ProtectedRoute from './components/ui/ProtectedRoute';
+import LandingPage from "./pages/LandingPage";
+import TeacherLoginPage from "./pages/TeacherLoginPage";
+import StudentLoginPage from "./pages/StudentLoginPage";
+import RequestAccessPage from "./pages/RequestAccessPage";
+import TeacherRegistrationPage from "./pages/TeacherRegistrationPage";
+import StudentRegistrationPage from "./pages/StudentRegistrationPage";
+import Dashboard from "./pages/Dashboard";
+import AssignmentPage from "./pages/AssignmentPage";
+import RouteErrorElement from "./components/ui/RouteErrorElement";
+import ProtectedRoute from "./components/ui/ProtectedRoute";
+import EmailVerificationPage from "./pages/EmailVerificationPage";
 
-import './index.css';
+import "./index.css";
 
 // Root layout component
 const RootLayout = () => {
@@ -36,14 +37,25 @@ const RootLayout = () => {
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<RootLayout />} errorElement={<RouteErrorElement />}>
+    <Route
+      path="/"
+      element={<RootLayout />}
+      errorElement={<RouteErrorElement />}
+    >
       {/* Public routes */}
       <Route index element={<LandingPage />} />
       <Route path="teacher-login" element={<TeacherLoginPage />} />
       <Route path="student-login" element={<StudentLoginPage />} />
       <Route path="request-access" element={<RequestAccessPage />} />
-      <Route path="teacher-registration" element={<TeacherRegistrationPage />} />
-      <Route path="student-registration" element={<TeacherRegistrationPage />} />
+      <Route
+        path="teacher-registration"
+        element={<TeacherRegistrationPage />}
+      />
+      <Route
+        path="student-registration"
+        element={<TeacherRegistrationPage />}
+      />
+      <Route path="verify-email" element={<EmailVerificationPage />} />
 
       {/* 🔒 Protected routes */}
       <Route element={<ProtectedRoute />}>
@@ -56,12 +68,12 @@ const router = createBrowserRouter(
     </Route>
   ),
   {
-    basename: '/EduAI',
+    basename: "/EduAI",
   }
 );
 
 // Wrap the entire app with NotificationProvider
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <NotificationProvider>
       <RouterProvider router={router} />

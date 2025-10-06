@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Brain, X, Copy, CheckCircle } from 'lucide-react';
 import { questionTypes, createQuestion } from '../../utils/assignmentUtils';
-import { useNotification } from '../../context/NotificationContext'; // Notification hooks
+import { generateQuestion, generateAssignment } from '../../services/aiService';
+import { useNotification } from '../../context/NotificationContext';
 
 const AssignmentCreator = ({ onSave, onCancel, aiGenerateQuestion }) => {
+  // ✅ Assignment state is defined here
   const [assignment, setAssignment] = useState({
     title: '',
     subject: '',
@@ -12,8 +14,8 @@ const AssignmentCreator = ({ onSave, onCancel, aiGenerateQuestion }) => {
     dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     questions: []
   });
-  const { showError, showSuccess } = useNotification(); // Notification hooks
 
+  // ✅ Current question state is defined here
   const [currentQuestion, setCurrentQuestion] = useState({
     type: 'multiple-choice',
     question: '',
@@ -22,6 +24,10 @@ const AssignmentCreator = ({ onSave, onCancel, aiGenerateQuestion }) => {
     points: 1
   });
 
+  const { showSuccess, showError } = useNotification();
+  const [aiGenerating, setAiGenerating] = useState(false);
+
+  // ✅ AddQuestion function (for adding current question to assignment)
   const addQuestion = () => {
     if (!currentQuestion.question.trim()) {
       alert('Please enter a question');
@@ -30,11 +36,6 @@ const AssignmentCreator = ({ onSave, onCancel, aiGenerateQuestion }) => {
 
     if (currentQuestion.type === 'multiple-choice' && currentQuestion.options.some(opt => !opt.trim())) {
       alert('Please fill in all answer options');
-      return;
-    }
-
-    if (currentQuestion.type === 'true-false' && currentQuestion.options.length < 2) {
-      alert('True/False questions need both True and False options');
       return;
     }
 
@@ -54,11 +55,57 @@ const AssignmentCreator = ({ onSave, onCancel, aiGenerateQuestion }) => {
     });
   };
 
-  const removeQuestion = (questionId) => {
-    setAssignment(prev => ({
-      ...prev,
-      questions: prev.questions.filter(q => q.id !== questionId)
-    }));
+  // ✅ AI Question Generation (now has access to assignment and currentQuestion)
+  const generateAIQuestion = async () => {
+    setAiGenerating(true);
+    try {
+      // ✅ Now 'assignment' and 'currentQuestion' are in scope!
+      const aiQuestion = await generateQuestion(
+        assignment.subject, // ✅ This is now defined
+        currentQuestion.difficulty || 'medium', 
+        currentQuestion.type, 
+        'general topic'
+      );
+
+      setCurrentQuestion(prev => ({
+        ...prev,
+        question: aiQuestion.question,
+        options: aiQuestion.options || prev.options,
+        correctAnswer: aiQuestion.correctAnswer,
+        explanation: aiQuestion.explanation
+      }));
+
+      showSuccess('AI generated question added!');
+    } catch (error) {
+      showError('Failed to generate AI question: ' + error.message);
+    }
+    setAiGenerating(false);
+  };
+
+  // ✅ AI Assignment Generation (now has access to assignment)
+  const generateAIAssignment = async () => {
+    setAiGenerating(true);
+    try {
+      // ✅ Now 'assignment' is in scope!
+      const aiAssignment = await generateAssignment(
+        assignment.subject, // ✅ This is now defined
+        'general topic',
+        assignment.difficulty,
+        5 // Default number of questions
+      );
+
+      // Update the entire assignment with AI-generated content
+      setAssignment(prev => ({
+        ...prev,
+        title: aiAssignment.title,
+        questions: aiAssignment.questions
+      }));
+
+      showSuccess('AI generated assignment created!');
+    } catch (error) {
+      showError('Failed to generate AI assignment: ' + error.message);
+    }
+    setAiGenerating(false);
   };
 
   const handleQuestionTypeChange = (type) => {
@@ -96,33 +143,11 @@ const AssignmentCreator = ({ onSave, onCancel, aiGenerateQuestion }) => {
     }
   };
 
-  const generateAIQuestion = async () => {
-    // Mock AI generation
-    const mockQuestions = {
-      'multiple-choice': {
-        question: 'Which of the following is NOT a JavaScript framework?',
-        options: ['React', 'Vue', 'Django', 'Angular'],
-        correctAnswer: 2
-      },
-      'short-answer': {
-        question: 'What is the capital of France?',
-        answer: 'Paris'
-      },
-      'true-false': {
-        question: 'JavaScript is a compiled language.',
-        correctAnswer: false
-      }
-    };
-
-    const mockQuestion = mockQuestions[currentQuestion.type];
-    if (mockQuestion) {
-      setCurrentQuestion(prev => ({
-        ...prev,
-        question: mockQuestion.question,
-        options: mockQuestion.options || prev.options,
-        correctAnswer: mockQuestion.correctAnswer !== undefined ? mockQuestion.correctAnswer : prev.correctAnswer
-      }));
-    }
+  const removeQuestion = (questionId) => {
+    setAssignment(prev => ({
+      ...prev,
+      questions: prev.questions.filter(q => q.id !== questionId)
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -138,6 +163,7 @@ const AssignmentCreator = ({ onSave, onCancel, aiGenerateQuestion }) => {
 
     onSave({
       ...assignment,
+      id: Date.now(),
       totalQuestions: assignment.questions.length
     });
   };
@@ -220,7 +246,7 @@ const AssignmentCreator = ({ onSave, onCancel, aiGenerateQuestion }) => {
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Add Question</h3>
             <button
               type="button"
-              onClick={generateAIQuestion}
+              onClick={generateAIQuestion} // ✅ AI button added here
               className="flex items-center space-x-1 bg-gradient-to-r from-purple-500 to-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:from-purple-600 hover:to-blue-700 transition-all"
             >
               <Brain className="w-4 h-4" />
@@ -348,18 +374,38 @@ const AssignmentCreator = ({ onSave, onCancel, aiGenerateQuestion }) => {
           </button>
         </div>
 
+        {/* AI Generation Buttons */}
+        <div className="flex space-x-3">
+          <button
+            type="button"
+            onClick={generateAIQuestion}
+            disabled={aiGenerating}
+            className="flex-1 bg-gradient-to-r from-purple-500 to-blue-600 text-white py-2 rounded-lg hover:from-purple-600 hover:to-blue-700 transition-all disabled:opacity-50"
+          >
+            {aiGenerating ? 'Generating...' : 'AI Generate Question'}
+          </button>
+          <button
+            type="button"
+            onClick={generateAIAssignment}
+            disabled={aiGenerating}
+            className="flex-1 bg-gradient-to-r from-green-500 to-blue-600 text-white py-2 rounded-lg hover:from-green-600 hover:to-blue-700 transition-all disabled:opacity-50"
+          >
+            {aiGenerating ? 'Generating...' : 'AI Generate Assignment'}
+          </button>
+        </div>
+
         {/* Preview Questions */}
         {assignment.questions.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Questions Preview</h3>
             <div className="space-y-3">
-              {assignment.questions.map((question, index) => (
+              {assignment.questions.map((question) => (
                 <div key={question.id} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                          {index + 1}. ({questionTypes[question.type]?.name})
+                          {assignment.questions.findIndex(q => q.id === question.id) + 1}. ({questionTypes[question.type]?.name})
                         </span>
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                           {question.points} pt{question.points > 1 ? 's' : ''}

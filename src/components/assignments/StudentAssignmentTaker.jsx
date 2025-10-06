@@ -2,11 +2,13 @@
 import React, { useState } from 'react';
 import { ArrowLeft, CheckCircle, Clock, FileText, Users, Award, Brain } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
+import { generateFeedback } from '../../services/aiService';
 
 const StudentAssignmentTaker = ({ assignment, onSubmit, onCancel }) => {
   const [answers, setAnswers] = useState({});
   const { showError, showSuccess } = useNotification();
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const handleAnswerChange = (questionId, answer) => {
     setAnswers(prev => ({
@@ -27,8 +29,60 @@ const StudentAssignmentTaker = ({ assignment, onSubmit, onCancel }) => {
     }
   };
 
-  const handleSubmit = () => {
-    onSubmit(answers); // ✅ Just pass answers, assignment is handled by parent
+  const handleSubmit = async () => {
+    setLoading(true);
+    
+    try {
+      // Prepare answers with AI feedback for short-answer questions
+      const enhancedAnswers = { ...answers };
+      const aiFeedback = {};
+
+      // Process each question to get AI feedback for short-answer questions
+      for (const question of assignment.questions) {
+        if (question.type === 'short-answer' || question.type === 'fill-in-blank') {
+          const userAnswer = answers[question.id];
+          if (userAnswer) {
+            try {
+              const feedback = await generateFeedback(
+                question.question,
+                userAnswer,
+                question.correctAnswer
+              );
+              
+              // Store AI feedback for this question
+              aiFeedback[question.id] = feedback;
+              
+              // Optionally update the answer with feedback
+              enhancedAnswers[question.id] = {
+                answer: userAnswer,
+                aiFeedback: feedback
+              };
+            } catch (error) {
+              console.error('AI Feedback Error:', error);
+              // If AI fails, continue without feedback
+              aiFeedback[question.id] = {
+                isCorrect: false,
+                feedback: 'AI feedback unavailable',
+                suggestion: 'Please review your answer',
+                grade: 'N/A'
+              };
+            }
+          }
+        }
+      }
+
+      // Show success message
+      showSuccess('Assignment submitted successfully! AI feedback generated.');
+      
+      // Submit with enhanced answers
+      onSubmit(enhancedAnswers, aiFeedback);
+      
+    } catch (error) {
+      showError('Error submitting assignment: ' + error.message);
+      console.error('Assignment submission error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const currentQ = assignment.questions[currentQuestion];
@@ -158,9 +212,9 @@ const StudentAssignmentTaker = ({ assignment, onSubmit, onCancel }) => {
       <div className="flex justify-between items-center">
         <button
           onClick={handlePrevious}
-          disabled={currentQuestion === 0}
+          disabled={currentQuestion === 0 || loading}
           className={`px-4 py-2 rounded-lg ${
-            currentQuestion === 0 
+            currentQuestion === 0 || loading
               ? 'bg-gray-200 text-gray-400 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed' 
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'
           }`}
@@ -171,17 +225,28 @@ const StudentAssignmentTaker = ({ assignment, onSubmit, onCancel }) => {
         {currentQuestion < assignment.questions.length - 1 ? (
           <button
             onClick={handleNext}
-            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
+            disabled={loading}
+            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
         ) : (
           <button
             onClick={handleSubmit}
-            className="px-6 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 transition-all flex items-center space-x-2"
+            disabled={loading}
+            className="px-6 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 transition-all flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <CheckCircle className="w-4 h-4" />
-            <span>Submit Assignment</span>
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Submitting...
+              </div>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                <span>Submit Assignment</span>
+              </>
+            )}
           </button>
         )}
       </div>

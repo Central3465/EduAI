@@ -1,6 +1,8 @@
 // src/pages/teacher/TeacherDashboard.jsx
 import React, { useState } from "react";
-import AssignmentCreator from "../../components/assignments/AssignmentCreator";
+import AssignmentCreator from '../../components/assignments/AssignmentCreator';
+import TeacherAssignmentAnalytics from '../../components/assingment/TeacherAssignmentAnalytics' // Add this import
+import StudentResponseReview from '../../components/assingment/StudentResponseReview'; // Add this import
 import {
   BookOpen,
   Users,
@@ -25,8 +27,8 @@ import {
 
 const TeacherDashboard = ({
   activeTab,
-  assignments,
-  students,
+  assignments = [], // ✅ Default to empty array
+  students = [],    // ✅ Default to empty array
   newAssignment,
   setNewAssignment,
   generateAssignment,
@@ -112,7 +114,7 @@ const TeacherDashboard = ({
 
   if (activeTab === "assignments") {
     if (selectedAssignment) {
-      // A**ignment detail view with tabs
+      // Assignment detail view with tabs
       return (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
@@ -130,7 +132,7 @@ const TeacherDashboard = ({
             </button>
           </div>
 
-          {/* A**ignment Detail Tabs */}
+          {/* Assignment Detail Tabs */}
           <div className="flex space-x-1 border-b border-gray-200">
             <button
               onClick={() => setActiveAssignmentTab("analytics")}

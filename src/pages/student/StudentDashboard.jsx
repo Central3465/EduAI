@@ -35,60 +35,66 @@ const StudentDashboard = ({ activeTab, assignments }) => {
     setAnswers({}); // Reset answers for new assignment
   };
 
-  const handleAssignmentSubmit = (assignment, userAnswers) => {
-    try {
-      // Calculate score
-      let correct = 0;
-      let total = assignment.questions.length;
+  const handleAssignmentSubmit = (assignment, answers, aiFeedback = {}) => {
+  try {
+    // Calculate score
+    let correct = 0;
+    let total = assignment.questions.length;
 
-      assignment.questions.forEach((question) => {
-        if (userAnswers[question.id] !== undefined) {
-          if (
-            question.type === "multiple-choice" ||
-            question.type === "true-false"
-          ) {
-            if (userAnswers[question.id] == question.correctAnswer) {
-              correct++;
-            }
+    assignment.questions.forEach((question) => {
+      const userAnswer = answers[question.id];
+      if (userAnswer !== undefined) {
+        if (question.type === 'multiple-choice' || question.type === 'true-false') {
+          if (userAnswer == question.correctAnswer) {
+            correct++;
           }
         }
-      });
+        // For short answer, we'll use AI feedback to determine correctness
+        else if (question.type === 'short-answer' || question.type === 'fill-in-blank') {
+          // Use AI feedback to determine if answer is correct
+          const feedback = aiFeedback[question.id];
+          if (feedback && feedback.isCorrect) {
+            correct++;
+          }
+        }
+      }
+    });
 
-      const score = Math.round((correct / total) * 100);
-      const grade = getGradeFromScore(score);
+    const score = Math.round((correct / total) * 100);
+    const grade = getGradeFromScore(score);
 
-      // Update the assignment with the grade in context
-      setAssignments((prev) =>
-        prev.map((a) =>
-          a.id === assignment.id
-            ? {
-                ...a,
-                grade: `${score}%`,
-                completedDate: new Date().toISOString().split("T")[0],
-                submissions: (a.submissions || 0) + 1,
-              }
-            : a
-        )
-      );
+    // Update the assignment with the grade in context
+    setAssignments(prev => prev.map(a => 
+      a.id === assignment.id 
+        ? { 
+            ...a, 
+            grade: `${score}%`,
+            completedDate: new Date().toISOString().split('T')[0],
+            submissions: (a.submissions || 0) + 1,
+            aiFeedback: aiFeedback // Store AI feedback with assignment
+          } 
+        : a
+    ));
 
-      // Prepare results data
-      const resultsData = {
-        assignment,
-        answers: userAnswers,
-        score,
-        grade,
-      };
+    // Prepare results data
+    const resultsData = {
+      assignment,
+      answers: answers,
+      score,
+      grade,
+      aiFeedback // Include AI feedback in results
+    };
 
-      setCurrentResults(resultsData);
-      setIsTakingAssignment(null);
-      setShowResults(true);
-
-      showSuccess(`Assignment completed! You scored ${score}% (${grade})`);
-    } catch (error) {
-      showError("Error submitting assignment: " + error.message);
-      console.error("Assignment submission error:", error);
-    }
-  };
+    setCurrentResults(resultsData);
+    setIsTakingAssignment(null);
+    setShowResults(true);
+    
+    showSuccess(`Assignment completed! You scored ${score}% (${grade})`);
+  } catch (error) {
+    showError('Error submitting assignment: ' + error.message);
+    console.error('Assignment submission error:', error);
+  }
+};
 
   const getGradeFromScore = (score) => {
     if (score >= 97) return "A+";
