@@ -35,6 +35,21 @@ const RootLayout = () => {
   );
 };
 
+// Add this to catch ALL navigation events
+window.addEventListener('beforeunload', (event) => {
+  console.log('=== PAGE UNLOADING ===');
+  console.log('Current URL:', window.location.href);
+});
+
+// Add this to catch navigation attempts
+const originalPushState = window.history.pushState;
+window.history.pushState = function() {
+  console.log('=== PUSH STATE CALLED ===');
+  console.log('Arguments:', arguments);
+  console.log('New URL would be:', arguments[2]);
+  return originalPushState.apply(this, arguments);
+};
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route

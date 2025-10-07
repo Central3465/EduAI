@@ -1,22 +1,22 @@
 // src/pages/TeacherLoginPage.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext'; // ✅ Import context
-import { useNotification } from '../context/NotificationContext';
-import { 
-  Lock, 
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext"; // ✅ Import context
+import { useNotification } from "../context/NotificationContext";
+import {
+  Lock,
   ChevronRight,
   ExternalLink,
   User,
   Key,
   Mail as MailIcon,
-  LogIn 
-} from 'lucide-react';
+  LogIn,
+} from "lucide-react";
 
 const TeacherLoginPage = () => {
   const [showLoginForm, setShowLoginForm] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -26,9 +26,9 @@ const TeacherLoginPage = () => {
 
   // Check if user has saved credentials
   useEffect(() => {
-    const savedEmail = localStorage.getItem('teacherEmail');
-    const savedRemember = localStorage.getItem('teacherRemember') === 'true';
-    
+    const savedEmail = localStorage.getItem("teacherEmail");
+    const savedRemember = localStorage.getItem("teacherRemember") === "true";
+
     if (savedEmail && savedRemember) {
       setEmail(savedEmail);
       setRememberMe(true);
@@ -39,36 +39,40 @@ const TeacherLoginPage = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const result = handleTeacherLogin(email, password);
-    
+
     if (result.success) {
       showSuccess(result.message);
-      
+
       // Save credentials if remember me is checked
       if (rememberMe) {
-        localStorage.setItem('teacherEmail', email);
-        localStorage.setItem('teacherRemember', 'true');
+        localStorage.setItem("teacherEmail", email);
+        localStorage.setItem("teacherRemember", "true");
       } else {
-        localStorage.removeItem('teacherEmail');
-        localStorage.removeItem('teacherRemember');
+        localStorage.removeItem("teacherEmail");
+        localStorage.removeItem("teacherRemember");
       }
-      
-      navigate('/dashboard');
+
+      navigate("/dashboard");
     } else {
       showError(result.message);
     }
-    
+
     setLoading(false);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('teacherEmail');
-    localStorage.removeItem('teacherRemember');
-    setEmail('');
-    setPassword('');
+    localStorage.removeItem("teacherEmail");
+    localStorage.removeItem("teacherRemember");
+    setEmail("");
+    setPassword("");
     setShowLoginForm(false);
   };
+
+  useEffect(() => {
+    console.log("=== LOADED PAGE ===", window.location.pathname);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
@@ -80,13 +84,17 @@ const TeacherLoginPage = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <User className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back, Teacher!</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Welcome Back, Teacher!
+              </h2>
               <p className="text-gray-600">Sign in to your account</p>
             </div>
-            
+
             <form onSubmit={handleLoginSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
                 <div className="relative">
                   <MailIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                   <input
@@ -99,9 +107,11 @@ const TeacherLoginPage = () => {
                   />
                 </div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
                 <div className="relative">
                   <Key className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                   <input
@@ -114,7 +124,7 @@ const TeacherLoginPage = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input
@@ -123,9 +133,11 @@ const TeacherLoginPage = () => {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                  <span className="ml-2 text-sm text-gray-600">
+                    Remember me
+                  </span>
                 </label>
-                <button 
+                <button
                   type="button"
                   onClick={handleLogout}
                   className="text-sm text-blue-600 hover:text-blue-800"
@@ -133,7 +145,7 @@ const TeacherLoginPage = () => {
                   Use access code
                 </button>
               </div>
-              
+
               <button
                 type="submit"
                 disabled={loading}
@@ -145,7 +157,7 @@ const TeacherLoginPage = () => {
                     Signing In...
                   </div>
                 ) : (
-                  'Sign In'
+                  "Sign In"
                 )}
               </button>
             </form>
@@ -157,20 +169,30 @@ const TeacherLoginPage = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Lock className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Teacher Access</h2>
-              <p className="text-gray-600">Enter your invite code to get started</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Teacher Access
+              </h2>
+              <p className="text-gray-600">
+                Enter your invite code to get started
+              </p>
             </div>
-            
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              if (accessCode === 'TEACHER2024') { // ✅ Now accessCode is defined
-                navigate('/teacher-registration');
-              } else {
-                alert('Invalid access code. Please try again.');
-              }
-            }} className="space-y-6">
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (accessCode === "TEACHER2024") {
+                  // ✅ Now accessCode is defined
+                  navigate("/teacher-registration");
+                } else {
+                  alert("Invalid access code. Please try again.");
+                }
+              }}
+              className="space-y-6"
+            >
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Access Code</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Access Code
+                </label>
                 <input
                   type="password"
                   value={accessCode} // ✅ Now comes from context
@@ -187,19 +209,21 @@ const TeacherLoginPage = () => {
                 Continue
               </button>
             </form>
-            
+
             <div className="mt-6 text-center space-y-4">
-              <p className="text-gray-600 text-sm">Don't have an access code?</p>
-              <button 
-                onClick={() => navigate('/request-access')}
+              <p className="text-gray-600 text-sm">
+                Don't have an access code?
+              </p>
+              <button
+                onClick={() => navigate("/request-access")}
                 className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center mx-auto"
               >
                 <ExternalLink className="w-4 h-4 mr-1" />
                 Request Access
               </button>
-              
+
               <div className="pt-2">
-                <button 
+                <button
                   onClick={() => setShowLoginForm(true)}
                   className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center mx-auto"
                 >
@@ -207,9 +231,9 @@ const TeacherLoginPage = () => {
                   Already have an account? Sign in
                 </button>
               </div>
-              
-              <button 
-                onClick={() => navigate('/')}
+
+              <button
+                onClick={() => navigate("/")}
                 className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
               >
                 <ChevronRight className="w-4 h-4 mr-1" />
