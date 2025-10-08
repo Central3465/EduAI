@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 
 const StudentLoginPage = () => {
-  // ❌ Remove props
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,10 +21,10 @@ const StudentLoginPage = () => {
 
   const navigate = useNavigate();
 
-  // ✅ Get everything from context
+  // ✅ Get everything from context (with fallbacks)
   const {
-    invitationCode,
-    setInvitationCode,
+    invitationCode = "", // ✅ Default value
+    setInvitationCode = () => {}, // ✅ No-op fallback
     setCurrentUser,
     setUserRole,
     handleStudentLogin,

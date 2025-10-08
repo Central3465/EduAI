@@ -4,7 +4,7 @@ import React, {
   useState,
   useContext,
   useCallback,
-  useRef,
+  useEffect,
 } from "react";
 
 const AppContext = createContext();
@@ -12,104 +12,53 @@ const AppContext = createContext();
 export const useAppContext = () => useContext(AppContext);
 
 export const AppProvider = ({ children }) => {
-  // Load initial state from localStorage
-  const [accessCode, setAccessCode] = useState(
-    () => localStorage.getItem("accessCode") || ""
+  // State management
+  const [userRole, setUserRole] = useState(
+    () => localStorage.getItem("userRole") || null
   );
   const [invitationCode, setInvitationCode] = useState(
     () => localStorage.getItem("invitationCode") || ""
   );
-  const [userRole, setUserRole] = useState(
-    () => localStorage.getItem("userRole") || null
-  );
-  const [newAssignment, setNewAssignment] = useState(null);
-  const [students, setStudents] = useState([]);
-  const [assignments, setAssignments] = useState([]);
   const [currentUser, setCurrentUser] = useState(() => {
     const user = localStorage.getItem("currentUser");
     return user ? JSON.parse(user) : null;
   });
-
-  // Store registered users
   const [users, setUsers] = useState(() => {
     const saved = localStorage.getItem("users");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          teachers: [],
-          students: [],
-        };
+    return saved ? JSON.parse(saved) : { teachers: [], students: [] };
   });
-
-  // Verification codes storage
-  const [verificationCodes, setVerificationCodes] = useState(() => {
-    const saved = localStorage.getItem("verificationCodes");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          teachers: {},
-          students: {},
-        };
-  });
-
   const [authLoading, setAuthLoading] = useState(false);
 
-  // Save to localStorage whenever state changes
-  React.useEffect(() => {
-    if (accessCode) localStorage.setItem("accessCode", accessCode);
-    else localStorage.removeItem("accessCode");
-  }, [accessCode]);
-
+  // Save to localStorage
   React.useEffect(() => {
     if (invitationCode) localStorage.setItem("invitationCode", invitationCode);
     else localStorage.removeItem("invitationCode");
   }, [invitationCode]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (userRole) localStorage.setItem("userRole", userRole);
     else localStorage.removeItem("userRole");
   }, [userRole]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentUser)
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
     else localStorage.removeItem("currentUser");
   }, [currentUser]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     localStorage.setItem("users", JSON.stringify(users));
   }, [users]);
 
-  React.useEffect(() => {
-    localStorage.setItem(
-      "verificationCodes",
-      JSON.stringify(verificationCodes)
-    );
-  }, [verificationCodes]);
-
-  // Generate verification code
-  const generateVerificationCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
-  };
-
-  // Send verification email (mock implementation)
-  const sendVerificationEmail = useCallback(async (email, code, role) => {
-    console.log(
-      `Verification email sent to ${email} for ${role} with code: ${code}`
-    );
-    return new Promise((resolve) => {
-      setTimeout(() => resolve({ success: true }), 1000);
-    });
-  }, []);
-
-  // CORRECTED: Handle student registration - FORCE SET USER ROLE
+  // 💣 NUKE: Fresh Student Registration
   const handleStudentRegistration = useCallback(
     (userData) => {
-      console.log("=== STUDENT REGISTRATION FUNCTION CALLED ===", userData);
+      console.log("=== 💣 NUKE: STUDENT REGISTRATION STARTED ===");
+      console.log("Input data:", userData);
       setAuthLoading(true);
 
       try {
-        // Check if email already exists in either teachers or students
+        // Check existing users
         const existingTeacher = users.teachers.find(
           (t) => t.email === userData.email
         );
@@ -121,35 +70,36 @@ export const AppProvider = ({ children }) => {
           throw new Error("Email already registered");
         }
 
-        // Verify invitation code (mock verification)
+        // Verify invitation code
         if (userData.invitationCode !== "STUDENT2024") {
           throw new Error("Invalid invitation code");
         }
 
-        const verificationCode = generateVerificationCode();
+        // Create student account - NO VERIFICATION
         const newStudent = {
-          id: Date.now().toString(),
+          id: `stu_${Date.now()}`,
           name: userData.name,
           email: userData.email,
-          password: userData.password,
-          invitationCode: userData.invitationCode,
-          createdAt: new Date().toISOString(),
+          password: userData.password, // In real app, hash this
           role: "student",
-          verified: false,
+          verified: true, // ✅ ALWAYS VERIFIED
           grade: "A",
-          verificationCode: verificationCode,
-          verificationExpiry: new Date(
-            Date.now() + 24 * 60 * 60 * 1000
-          ).toISOString(),
+          createdAt: new Date().toISOString(),
+          progress: 0,
+          assignmentsCompleted: 0,
         };
 
-        // ✅ FORCE UPDATE BOTH USERS STATE AND USER ROLE
-        setUsers((prevUsers) => ({
-          ...prevUsers,
-          students: [...prevUsers.students, newStudent],
+        console.log("=== 🎓 CREATING STUDENT ===");
+        console.log("Student data:", newStudent);
+
+        // Update users
+        setUsers((prev) => ({
+          ...prev,
+          students: [...prev.students, newStudent],
         }));
 
-        // ✅ FORCE SET USER ROLE AND CURRENT USER IMMEDIATELY
+        // ✅ FORCE SET USER ROLE TO STUDENT
+        console.log("=== 🔑 SETTING USER ROLE TO STUDENT ===");
         localStorage.setItem("userRole", "student");
         localStorage.setItem(
           "currentUser",
@@ -162,31 +112,32 @@ export const AppProvider = ({ children }) => {
         setUserRole("student");
         setCurrentUser({ name: newStudent.name, email: newStudent.email });
 
-        // Send verification email
-        sendVerificationEmail(newStudent.email, verificationCode, "student");
-
         setAuthLoading(false);
-        console.log("=== STUDENT REGISTRATION COMPLETED ===");
+        console.log("=== ✅ STUDENT REGISTRATION COMPLETE ===");
+
         return {
           success: true,
-          message:
-            "Registration successful! Please check your email to verify your account.",
+          message: "🎉 Registration successful! Welcome to EduAI!",
         };
       } catch (error) {
         setAuthLoading(false);
+        console.log("=== ❌ STUDENT REGISTRATION FAILED ===");
+        console.log("Error:", error.message);
         return { success: false, message: error.message };
       }
     },
-    [users, sendVerificationEmail, generateVerificationCode]
+    [users]
   );
-  // CORRECTED: Handle teacher registration with proper state update
+
+  // 💣 NUKE: Fresh Teacher Registration
   const handleTeacherRegistration = useCallback(
     (userData) => {
-      console.log("=== TEACHER REGISTRATION FUNCTION CALLED ===", userData);
+      console.log("=== 💣 NUKE: TEACHER REGISTRATION STARTED ===");
+      console.log("Input data:", userData);
       setAuthLoading(true);
 
       try {
-        // Check if email already exists in either teachers or students
+        // Check existing users
         const existingTeacher = users.teachers.find(
           (t) => t.email === userData.email
         );
@@ -198,96 +149,63 @@ export const AppProvider = ({ children }) => {
           throw new Error("Email already registered");
         }
 
-        const verificationCode = generateVerificationCode();
+        // Create teacher account - NO VERIFICATION
         const newTeacher = {
-          id: Date.now().toString(),
+          id: `tch_${Date.now()}`,
+          name: userData.name || "Teacher",
           email: userData.email,
-          password: userData.password,
+          password: userData.password, // In real app, hash this
+          role: "teacher",
+          verified: true, // ✅ ALWAYS VERIFIED
           accessCode: userData.accessCode || "TEACHER2024",
           createdAt: new Date().toISOString(),
-          role: "teacher",
-          verified: false,
-          name: userData.name || "Teacher",
-          verificationCode: verificationCode,
-          verificationExpiry: new Date(
-            Date.now() + 24 * 60 * 60 * 1000
-          ).toISOString(),
+          students: [],
         };
 
-        // ✅ FIX: Use functional update to ensure we're working with latest state
-        setUsers((prevUsers) => {
-          console.log(
-            "Updating users state. Previous teachers:",
-            prevUsers.teachers
-          );
-          const updatedTeachers = [...prevUsers.teachers, newTeacher];
-          console.log("New teachers array:", updatedTeachers);
+        console.log("=== 👨‍🏫 CREATING TEACHER ===");
+        console.log("Teacher data:", newTeacher);
 
-          return {
-            ...prevUsers,
-            teachers: updatedTeachers,
-          };
-        });
+        // Update users
+        setUsers((prev) => ({
+          ...prev,
+          teachers: [...prev.teachers, newTeacher],
+        }));
 
-        // SET USER ROLE AND CURRENT USER AFTER REGISTRATION
+        // ✅ FORCE SET USER ROLE TO TEACHER
+        console.log("=== 🔑 SETTING USER ROLE TO TEACHER ===");
+        localStorage.setItem("userRole", "teacher");
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            name: newTeacher.name,
+            email: newTeacher.email,
+          })
+        );
+
         setUserRole("teacher");
         setCurrentUser({ name: newTeacher.name, email: newTeacher.email });
 
-        // Send verification email
-        sendVerificationEmail(newTeacher.email, verificationCode, "teacher");
-
         setAuthLoading(false);
-        console.log("=== TEACHER REGISTRATION COMPLETED ===");
+        console.log("=== ✅ TEACHER REGISTRATION COMPLETE ===");
+
         return {
           success: true,
-          message:
-            "Registration successful! Please check your email to verify your account.",
+          message: "🎉 Registration successful! Welcome to EduAI!",
         };
       } catch (error) {
         setAuthLoading(false);
-        return { success: false, message: error.message };
-      }
-    },
-    [users, sendVerificationEmail, generateVerificationCode] // ✅ Keep these dependencies
-  );
-
-  // Handle teacher login
-  const handleTeacherLogin = useCallback(
-    (email, password) => {
-      setAuthLoading(true);
-
-      try {
-        const teacher = users.teachers.find((t) => t.email === email);
-
-        if (!teacher) {
-          throw new Error("No account found with this email");
-        }
-
-        if (teacher.password !== password) {
-          throw new Error("Incorrect password");
-        }
-
-        if (!teacher.verified) {
-          throw new Error("Please verify your email before logging in");
-        }
-
-        // ✅ SET CORRECT ROLE FOR TEACHER
-        setUserRole("teacher");
-        setCurrentUser({ name: teacher.name, email: teacher.email });
-
-        setAuthLoading(false);
-        return { success: true, message: "Login successful!" };
-      } catch (error) {
-        setAuthLoading(false);
+        console.log("=== ❌ TEACHER REGISTRATION FAILED ===");
+        console.log("Error:", error.message);
         return { success: false, message: error.message };
       }
     },
     [users]
   );
 
-  // Handle student login - FORCE SET USER ROLE
+  // 💣 NUKE: Student Login
   const handleStudentLogin = useCallback(
     (email, password) => {
+      console.log("=== 💣 NUKE: STUDENT LOGIN ===");
       setAuthLoading(true);
 
       try {
@@ -301,11 +219,8 @@ export const AppProvider = ({ children }) => {
           throw new Error("Incorrect password");
         }
 
-        if (!student.verified) {
-          throw new Error("Please verify your email before logging in");
-        }
-
-        // ✅ FORCE SET USER ROLE AND CURRENT USER
+        // ✅ FORCE SET USER ROLE TO STUDENT
+        console.log("=== 🔑 LOGGING IN AS STUDENT ===");
         localStorage.setItem("userRole", "student");
         localStorage.setItem(
           "currentUser",
@@ -319,123 +234,84 @@ export const AppProvider = ({ children }) => {
         setCurrentUser({ name: student.name, email: student.email });
 
         setAuthLoading(false);
+        console.log("=== ✅ STUDENT LOGIN SUCCESSFUL ===");
         return { success: true, message: "Login successful!" };
       } catch (error) {
         setAuthLoading(false);
+        console.log("=== ❌ STUDENT LOGIN FAILED ===");
         return { success: false, message: error.message };
       }
     },
     [users]
   );
 
-  // Verify email with code
-  const verifyEmailWithCode = useCallback(
-    (email, code, role) => {
+  // 💣 NUKE: Teacher Login
+  const handleTeacherLogin = useCallback(
+    (email, password) => {
+      console.log("=== 💣 NUKE: TEACHER LOGIN ===");
+      setAuthLoading(true);
+
       try {
-        if (role === "teacher") {
-          const teacherIndex = users.teachers.findIndex(
-            (t) => t.email === email
-          );
-          if (teacherIndex === -1) {
-            throw new Error("Account not found");
-          }
+        const teacher = users.teachers.find((t) => t.email === email);
 
-          const teacher = users.teachers[teacherIndex];
-
-          if (teacher.verificationCode !== code) {
-            throw new Error("Invalid verification code");
-          }
-
-          if (new Date() > new Date(teacher.verificationExpiry)) {
-            throw new Error("Verification code has expired");
-          }
-
-          setUsers((prev) => ({
-            ...prev,
-            teachers: prev.teachers.map((t, index) =>
-              index === teacherIndex
-                ? {
-                    ...t,
-                    verified: true,
-                    verificationCode: null,
-                    verificationExpiry: null,
-                  }
-                : t
-            ),
-          }));
-
-          return { success: true, message: "Email verified successfully!" };
-        } else {
-          // student
-          const studentIndex = users.students.findIndex(
-            (s) => s.email === email
-          );
-          if (studentIndex === -1) {
-            throw new Error("Account not found");
-          }
-
-          const student = users.students[studentIndex];
-
-          if (student.verificationCode !== code) {
-            throw new Error("Invalid verification code");
-          }
-
-          if (new Date() > new Date(student.verificationExpiry)) {
-            throw new Error("Verification code has expired");
-          }
-
-          setUsers((prev) => ({
-            ...prev,
-            students: prev.students.map((s, index) =>
-              index === studentIndex
-                ? {
-                    ...s,
-                    verified: true,
-                    verificationCode: null,
-                    verificationExpiry: null,
-                  }
-                : s
-            ),
-          }));
-
-          return { success: true, message: "Email verified successfully!" };
+        if (!teacher) {
+          throw new Error("No account found with this email");
         }
+
+        if (teacher.password !== password) {
+          throw new Error("Incorrect password");
+        }
+
+        // ✅ FORCE SET USER ROLE TO TEACHER
+        console.log("=== 🔑 LOGGING IN AS TEACHER ===");
+        localStorage.setItem("userRole", "teacher");
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            name: teacher.name,
+            email: teacher.email,
+          })
+        );
+
+        setUserRole("teacher");
+        setCurrentUser({ name: teacher.name, email: teacher.email });
+
+        setAuthLoading(false);
+        console.log("=== ✅ TEACHER LOGIN SUCCESSFUL ===");
+        return { success: true, message: "Login successful!" };
       } catch (error) {
+        setAuthLoading(false);
+        console.log("=== ❌ TEACHER LOGIN FAILED ===");
         return { success: false, message: error.message };
       }
     },
     [users]
   );
 
-  // Logout function
+  // Logout
   const logout = useCallback(() => {
+    console.log("=== 🔚 LOGOUT ===");
     setUserRole(null);
     setCurrentUser(null);
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("currentUser");
   }, []);
 
   return (
     <AppContext.Provider
       value={{
-        accessCode,
-        setAccessCode,
-        invitationCode,
-        setInvitationCode,
         userRole,
         setUserRole,
         currentUser,
         setCurrentUser,
         users,
         authLoading,
-        setAssignments,
-        setStudents,
-        newAssignment,
-        setNewAssignment,
-        handleTeacherRegistration,
         handleStudentRegistration,
-        handleTeacherLogin,
+        handleTeacherRegistration,
         handleStudentLogin,
-        verifyEmailWithCode,
-        assignments,
+        handleTeacherLogin,
+        invitationCode,
+        setInvitationCode,
         logout,
       }}
     >

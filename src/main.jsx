@@ -68,7 +68,7 @@ const router = createBrowserRouter(
       />
       <Route
         path="student-registration"
-        element={<TeacherRegistrationPage />}
+        element={<StudentRegistrationPage />}
       />
       <Route path="verify-email" element={<EmailVerificationPage />} />
 

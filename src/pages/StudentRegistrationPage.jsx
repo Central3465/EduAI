@@ -19,18 +19,12 @@ const StudentRegistrationPage = () => {
 
   const navigate = useNavigate();
 
-  // ✅ Use handleStudentRegistration instead of handleTeacherRegistration
-  const { handleStudentRegistration, handleTeacherRegistration } =
-    useAppContext();
+  // ✅ Use handleStudentRegistration instead of
+  const { handleStudentRegistration, userRole } = useAppContext();
   const { showSuccess, showError } = useNotification();
 
   console.log("=== DEBUGGING CONTEXT FUNCTIONS ===");
   console.log("handleStudentRegistration function:", handleStudentRegistration);
-  console.log("handleTeacherRegistration function:", handleTeacherRegistration);
-  console.log(
-    "Are they the same?",
-    handleStudentRegistration === handleTeacherRegistration
-  );
 
   const validateForm = () => {
     const newErrors = {};
@@ -56,13 +50,14 @@ const StudentRegistrationPage = () => {
     return newErrors;
   };
 
+  // In handleSubmit function
   const handleSubmit = async (e) => {
     e.preventDefault();
+    localStorage.clear();
     console.log("=== SUBMIT BUTTON CLICKED ===");
 
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
-      console.log("Validation failed:", validationErrors);
       setErrors(validationErrors);
       return;
     }
@@ -70,28 +65,24 @@ const StudentRegistrationPage = () => {
     setLoading(true);
     console.log("Calling handleStudentRegistration with:", formData);
 
-    const result = handleStudentRegistration(formData);
+    console.log(
+      "Using handleStudentRegistration:",
+      handleStudentRegistration.toString()
+    );
+    console.log("Current userRole in context:", userRole);
+
+    const result = await handleStudentRegistration(formData);
     console.log("Registration result:", result);
 
     if (result.success) {
-      console.log("SUCCESS: Showing success message");
       showSuccess(result.message);
 
-      // ✅ FORCE SET USER ROLE BEFORE REDIRECT
-      localStorage.setItem("userRole", "student");
-
-      console.log("Setting timeout to redirect...");
+      // ✅ FORCE REDIRECT TO DASHBOARD
       setTimeout(() => {
-        console.log("=== TIMEOUT FIRED - ABOUT TO NAVIGATE ===");
-        console.log("Current location before navigate:", window.location.href);
-
-        // ✅ FORCE REDIRECT TO STUDENT LOGIN
-        window.location.href = "/student-login"; // ✅ Use window.location for force redirect
-
-        console.log("Navigation called to /student-login");
-      }, 2000);
+        console.log("=== 🔜 REDIRECTING TO DASHBOARD ===");
+        window.location.href = "/dashboard"; // ✅ FORCE REDIRECT
+      }, 1500);
     } else {
-      console.log("ERROR: Showing error message");
       showError(result.message);
     }
 
