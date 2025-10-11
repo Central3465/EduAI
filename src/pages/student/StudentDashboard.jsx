@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import StudentAssignmentTaker from "./../../components/assignments/StudentAssignmentTaker";
 import AssignmentResults from "./../../components/assignments/AssignmentResults";
 import AIRecommendations from "./../../components/assignments/AIRecommendations";
-import { useAppContext } from "../../context/AppContext"; // Import context
-import { useNotification } from "../../context/NotificationContext"; // Import notifications
+import { useAppContext } from "../../context/AppContext";
+import { useNotification } from "../../context/NotificationContext";
 import {
   BookOpen,
   Award,
@@ -20,81 +20,78 @@ import {
   BarChart3,
 } from "lucide-react";
 
-const StudentDashboard = ({ activeTab, assignments }) => {
+// ✅ Add default empty array for assignments
+const StudentDashboard = ({ activeTab, assignments = [] }) => {
   const [isTakingAssignment, setIsTakingAssignment] = useState(null);
   const [showResults, setShowResults] = useState(false);
   const [currentResults, setCurrentResults] = useState(null);
-  const [answers, setAnswers] = useState({}); // Track answers for results
+  const [answers, setAnswers] = useState({});
 
-  // Get context functions to update assignments
   const { setAssignments } = useAppContext();
   const { showError, showSuccess } = useNotification();
 
+  // ✅ Add safety check for all array operations
+  const safeAssignments = assignments || [];
+
   const handleStartAssignment = (assignment) => {
     setIsTakingAssignment(assignment);
-    setAnswers({}); // Reset answers for new assignment
+    setAnswers({});
   };
 
   const handleAssignmentSubmit = (assignment, answers, aiFeedback = {}) => {
-  try {
-    // Calculate score
-    let correct = 0;
-    let total = assignment.questions.length;
+    try {
+      let correct = 0;
+      let total = assignment.questions.length;
 
-    assignment.questions.forEach((question) => {
-      const userAnswer = answers[question.id];
-      if (userAnswer !== undefined) {
-        if (question.type === 'multiple-choice' || question.type === 'true-false') {
-          if (userAnswer == question.correctAnswer) {
-            correct++;
+      assignment.questions.forEach((question) => {
+        const userAnswer = answers[question.id];
+        if (userAnswer !== undefined) {
+          if (question.type === 'multiple-choice' || question.type === 'true-false') {
+            if (userAnswer == question.correctAnswer) {
+              correct++;
+            }
+          } else if (question.type === 'short-answer' || question.type === 'fill-in-blank') {
+            const feedback = aiFeedback[question.id];
+            if (feedback && feedback.isCorrect) {
+              correct++;
+            }
           }
         }
-        // For short answer, we'll use AI feedback to determine correctness
-        else if (question.type === 'short-answer' || question.type === 'fill-in-blank') {
-          // Use AI feedback to determine if answer is correct
-          const feedback = aiFeedback[question.id];
-          if (feedback && feedback.isCorrect) {
-            correct++;
-          }
-        }
-      }
-    });
+      });
 
-    const score = Math.round((correct / total) * 100);
-    const grade = getGradeFromScore(score);
+      const score = Math.round((correct / total) * 100);
+      const grade = getGradeFromScore(score);
 
-    // Update the assignment with the grade in context
-    setAssignments(prev => prev.map(a => 
-      a.id === assignment.id 
-        ? { 
-            ...a, 
-            grade: `${score}%`,
-            completedDate: new Date().toISOString().split('T')[0],
-            submissions: (a.submissions || 0) + 1,
-            aiFeedback: aiFeedback // Store AI feedback with assignment
-          } 
-        : a
-    ));
+      setAssignments(prev => (prev || []).map(a => 
+        a.id === assignment.id 
+          ? { 
+              ...a, 
+              grade: `${score}%`,
+              completedDate: new Date().toISOString().split('T')[0],
+              submissions: (a.submissions || 0) + 1,
+              aiFeedback: aiFeedback
+            } 
+          : a
+      ));
 
-    // Prepare results data
-    const resultsData = {
-      assignment,
-      answers: answers,
-      score,
-      grade,
-      aiFeedback // Include AI feedback in results
-    };
+      const resultsData = {
+        assignment,
+        answers: answers,
+        score,
+        grade,
+        aiFeedback
+      };
 
-    setCurrentResults(resultsData);
-    setIsTakingAssignment(null);
-    setShowResults(true);
-    
-    showSuccess(`Assignment completed! You scored ${score}% (${grade})`);
-  } catch (error) {
-    showError('Error submitting assignment: ' + error.message);
-    console.error('Assignment submission error:', error);
-  }
-};
+      setCurrentResults(resultsData);
+      setIsTakingAssignment(null);
+      setShowResults(true);
+      
+      showSuccess(`Assignment completed! You scored ${score}% (${grade})`);
+    } catch (error) {
+      showError('Error submitting assignment: ' + error.message);
+      console.error('Assignment submission error:', error);
+    }
+  };
 
   const getGradeFromScore = (score) => {
     if (score >= 97) return "A+";
@@ -121,8 +118,7 @@ const StudentDashboard = ({ activeTab, assignments }) => {
   };
 
   const handleReviewAnswers = () => {
-    // Stay on results page, just for review
-    // Could add more detailed review features here
+    // Stay on results page
   };
 
   const handleBackToAssignments = () => {
@@ -141,7 +137,8 @@ const StudentDashboard = ({ activeTab, assignments }) => {
                 <p className="text-gray-600">Active Assignments</p>
                 <p className="text-3xl font-bold text-blue-600">
                   {
-                    assignments.filter((a) => a.status === "active" && !a.grade)
+                    // ✅ Safe filter operation
+                    safeAssignments.filter((a) => a.status === "active" && !a.grade)
                       .length
                   }
                 </p>
@@ -154,16 +151,16 @@ const StudentDashboard = ({ activeTab, assignments }) => {
               <div>
                 <p className="text-gray-600">Overall Grade</p>
                 <p className="text-3xl font-bold text-green-600">
-                  {assignments.length > 0
+                  {safeAssignments.length > 0
                     ? Math.round(
-                        assignments
+                        safeAssignments
                           .filter((a) => a.grade)
                           .map((a) => {
                             const score = parseFloat(a.grade.replace("%", ""));
                             return isNaN(score) ? 0 : score;
                           })
                           .reduce((a, b) => a + b, 0) /
-                          assignments.filter((a) => a.grade).length
+                          safeAssignments.filter((a) => a.grade).length
                       ) + "%"
                     : "0%"}
                 </p>
@@ -176,10 +173,10 @@ const StudentDashboard = ({ activeTab, assignments }) => {
               <div>
                 <p className="text-gray-600">Progress</p>
                 <p className="text-3xl font-bold text-purple-600">
-                  {assignments.length > 0
+                  {safeAssignments.length > 0
                     ? Math.round(
-                        (assignments.filter((a) => a.grade).length /
-                          assignments.length) *
+                        (safeAssignments.filter((a) => a.grade).length /
+                          safeAssignments.length) *
                           100
                       ) + "%"
                     : "0%"}
@@ -196,7 +193,7 @@ const StudentDashboard = ({ activeTab, assignments }) => {
             Recent Assignments
           </h3>
           <div className="space-y-3">
-            {assignments.slice(0, 3).map((assignment) => (
+            {safeAssignments.slice(0, 3).map((assignment) => (
               <div
                 key={assignment.id}
                 className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
@@ -268,7 +265,7 @@ const StudentDashboard = ({ activeTab, assignments }) => {
         )}
 
         <div className="grid gap-4">
-          {assignments.map((assignment) => (
+          {safeAssignments.map((assignment) => (
             <div
               key={assignment.id}
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
@@ -338,10 +335,9 @@ const StudentDashboard = ({ activeTab, assignments }) => {
   if (activeTab === "ai-recommendations") {
     return (
       <AIRecommendations
-        assignments={assignments}
-        studentPerformance={assignments.filter((a) => a.grade)}
+        assignments={safeAssignments}
+        studentPerformance={safeAssignments.filter((a) => a.grade)}
         onGenerateAssignment={(params) => {
-          // In a real app, this would generate an assignment based on params
           console.log("Generating assignment:", params);
         }}
       />
@@ -360,7 +356,7 @@ const StudentDashboard = ({ activeTab, assignments }) => {
             <div className="col-span-2">Date</div>
             <div className="col-span-1">Status</div>
           </div>
-          {assignments.map((assignment) => (
+          {safeAssignments.map((assignment) => (
             <div
               key={assignment.id}
               className="grid grid-cols-12 gap-4 p-4 hover:bg-gray-50 border-b"
@@ -416,10 +412,10 @@ const StudentDashboard = ({ activeTab, assignments }) => {
                   Overall Progress
                 </span>
                 <span className="text-gray-600">
-                  {assignments.length > 0
+                  {safeAssignments.length > 0
                     ? Math.round(
-                        (assignments.filter((a) => a.grade).length /
-                          assignments.length) *
+                        (safeAssignments.filter((a) => a.grade).length /
+                          safeAssignments.length) *
                           100
                       ) + "%"
                     : "0%"}
@@ -430,10 +426,10 @@ const StudentDashboard = ({ activeTab, assignments }) => {
                   className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full"
                   style={{
                     width:
-                      assignments.length > 0
+                      safeAssignments.length > 0
                         ? `${
-                            (assignments.filter((a) => a.grade).length /
-                              assignments.length) *
+                            (safeAssignments.filter((a) => a.grade).length /
+                              safeAssignments.length) *
                             100
                           }%`
                         : "0%",
@@ -442,10 +438,9 @@ const StudentDashboard = ({ activeTab, assignments }) => {
               </div>
             </div>
 
-            {/* Subject-wise progress */}
             {["Mathematics", "Literature", "Computer Science", "History"].map(
               (subject, index) => {
-                const subjectAssignments = assignments.filter(
+                const subjectAssignments = safeAssignments.filter(
                   (a) => a.subject === subject
                 );
                 const completedSubjectAssignments = subjectAssignments.filter(
@@ -489,14 +484,13 @@ const StudentDashboard = ({ activeTab, assignments }) => {
           </div>
         </div>
 
-        {/* Assignment Performance Chart */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
             Assignment Performance
           </h3>
           <div className="space-y-4">
-            {assignments
-              .filter((a) => a.grade) // Only show completed assignments
+            {safeAssignments
+              .filter((a) => a.grade)
               .slice(0, 5)
               .map((assignment, index) => (
                 <div key={assignment.id}>

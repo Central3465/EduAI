@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { useNotification } from "../context/NotificationContext";
-import { motion } from "framer-motion";
 
 const StudentRegistrationPage = () => {
   const [formData, setFormData] = useState({
@@ -12,19 +11,20 @@ const StudentRegistrationPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    invitationCode: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  // ✅ Use handleStudentRegistration instead of
-  const { handleStudentRegistration, userRole } = useAppContext();
+  // ✅ Get functions and state from context
+  const { 
+    handleStudentRegistration, 
+    invitationCode, // ✅ Get invitationCode from context
+    userRole 
+  } = useAppContext();
+  
   const { showSuccess, showError } = useNotification();
-
-  console.log("=== DEBUGGING CONTEXT FUNCTIONS ===");
-  console.log("handleStudentRegistration function:", handleStudentRegistration);
 
   const validateForm = () => {
     const newErrors = {};
@@ -44,16 +44,11 @@ const StudentRegistrationPage = () => {
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
-    if (!formData.invitationCode.trim()) {
-      newErrors.invitationCode = "Invitation code is required";
-    }
     return newErrors;
   };
 
-  // In handleSubmit function
   const handleSubmit = async (e) => {
     e.preventDefault();
-    localStorage.clear();
     console.log("=== SUBMIT BUTTON CLICKED ===");
 
     const validationErrors = validateForm();
@@ -63,25 +58,32 @@ const StudentRegistrationPage = () => {
     }
 
     setLoading(true);
-    console.log("Calling handleStudentRegistration with:", formData);
+    console.log("Calling handleStudentRegistration with:", {
+      ...formData,
+      invitationCode // ✅ Include invitationCode
+    });
 
-    console.log(
-      "Using handleStudentRegistration:",
-      handleStudentRegistration.toString()
-    );
-    console.log("Current userRole in context:", userRole);
-
-    const result = await handleStudentRegistration(formData);
+    // ✅ Include invitationCode in the data
+    const result = await handleStudentRegistration({
+      ...formData,
+      invitationCode
+    });
+    
     console.log("Registration result:", result);
 
     if (result.success) {
       showSuccess(result.message);
-
-      // ✅ FORCE REDIRECT TO DASHBOARD
+      
+      // ✅ Redirect to verification or dashboard based on verification status
       setTimeout(() => {
-        console.log("=== 🔜 REDIRECTING TO DASHBOARD ===");
-        window.location.href = "/dashboard"; // ✅ FORCE REDIRECT
-      }, 1500);
+        // If email verification is enabled, go to verification page
+        // Otherwise go to dashboard
+        if (result.needsVerification) {
+          navigate(`/verify-email?email=${encodeURIComponent(formData.email)}&role=student`);
+        } else {
+          navigate("/dashboard");
+        }
+      }, 2000);
     } else {
       showError(result.message);
     }
@@ -199,29 +201,6 @@ const StudentRegistrationPage = () => {
             {errors.confirmPassword && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.confirmPassword}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Invitation Code
-            </label>
-            <input
-              type="text"
-              value={formData.invitationCode}
-              onChange={(e) =>
-                setFormData({ ...formData, invitationCode: e.target.value })
-              }
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.invitationCode ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter your invitation code"
-              required
-            />
-            {errors.invitationCode && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.invitationCode}
               </p>
             )}
           </div>

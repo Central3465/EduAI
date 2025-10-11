@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+dist
 *.local
 
 # Editor directories and files
@@ -21,3 +22,11 @@ node_modules
 *.sln
 *.sw?
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+dist/
+node_modules/
+.gitignore
+coverage/

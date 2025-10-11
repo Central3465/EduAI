@@ -10,6 +10,7 @@ import {
 } from "react-router-dom";
 import { NotificationProvider } from "./context/NotificationContext"; // Import NotificationProvider
 import { AppProvider } from "./context/AppContext";
+import { SubscriptionProvider } from "./context/SubscriptionContext";
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -23,6 +24,7 @@ import AssignmentPage from "./pages/AssignmentPage";
 import RouteErrorElement from "./components/ui/RouteErrorElement";
 import ProtectedRoute from "./components/ui/ProtectedRoute";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
+import PricingPage from "./pages/PricingPage";
 
 import "./index.css";
 
@@ -71,6 +73,7 @@ const router = createBrowserRouter(
         element={<StudentRegistrationPage />}
       />
       <Route path="verify-email" element={<EmailVerificationPage />} />
+      <Route path="pricing" element={<PricingPage />} />
 
       {/* 🔒 Protected routes */}
       <Route element={<ProtectedRoute />}>
@@ -90,8 +93,10 @@ const router = createBrowserRouter(
 // Wrap the entire app with NotificationProvider
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    <SubscriptionProvider>
     <NotificationProvider>
       <RouterProvider router={router} />
     </NotificationProvider>
+    </SubscriptionProvider>
   </React.StrictMode>
 );
