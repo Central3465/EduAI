@@ -6,7 +6,7 @@ import { useSubscription } from "../context/SubscriptionContext";
 import { useNotification } from "../context/NotificationContext";
 import TeacherDashboard from "./teacher/TeacherDashboard";
 import StudentDashboard from "./student/StudentDashboard";
-import PaywallScreen from "../components/paywall/PaywallScreen"; // ✅ We'll create this
+import PaywallScreen from "../components/paywall/PaywallScreen";
 import {
   Home,
   BookOpen,
@@ -20,6 +20,7 @@ import {
   CreditCard,
   Shield,
   Clock,
+  Loader2 // ✅ Import the loader icon
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -46,13 +47,26 @@ const Dashboard = () => {
   
   const { showSuccess, showError } = useNotification();
 
-  // ✅ Redirect guests to login
+  // ✅ New state for loading simulation
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ✅ Simulate loading/checking for 10 seconds on initial load
   useEffect(() => {
-    if (!currentUser) {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 10000); // 10 seconds
+
+    // Cleanup timer if component unmounts
+    return () => clearTimeout(timer);
+  }, []);
+
+  // ✅ Redirect guests to login (only if not loading)
+  useEffect(() => {
+    if (!isLoading && !currentUser) {
       navigate("/");
       return;
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, isLoading]);
 
   // ✅ Handle logout
   const handleLogout = () => {
@@ -60,6 +74,33 @@ const Dashboard = () => {
     showSuccess("Logged out successfully!");
     navigate("/");
   };
+
+  // ✅ Show loading screen if still checking
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <Loader2 className="w-12 h-12 text-white animate-spin" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Preparing Your Dashboard...</h2>
+          <p className="text-gray-300">Please wait while we set everything up for you.</p>
+          <div className="mt-6 w-64 h-2 bg-gray-700 rounded-full overflow-hidden mx-auto">
+            <div className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-progress"></div>
+          </div>
+          <style jsx>{`
+            @keyframes progress {
+              0% { width: 0%; }
+              100% { width: 100%; }
+            }
+            .animate-progress {
+              animation: progress 10s linear forwards;
+            }
+          `}</style>
+        </div>
+      </div>
+    );
+  }
 
   // ✅ Show paywall if user can't access dashboard
   if (userRole === "teacher" && !canAccessDashboard()) {
@@ -167,16 +208,16 @@ const Dashboard = () => {
               activeTab={activeTab}
               assignments={assignments}
               students={students}
-              newAssignment={newAssignment}
-              setNewAssignment={setNewAssignment}
-              generateAssignment={generateAssignment}
               setAssignments={setAssignments}
               setStudents={setStudents}
-              setShowCreateModal={setShowCreateModal}
-              showCreateModal={showCreateModal}
+              // ... other props
             />
           ) : (
-            <StudentDashboard activeTab={activeTab} assignments={assignments} />
+            <StudentDashboard
+              activeTab={activeTab}
+              assignments={assignments}
+              // ... other props
+            />
           )}
         </div>
       </div>

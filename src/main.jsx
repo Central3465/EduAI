@@ -24,6 +24,10 @@ import AssignmentPage from "./pages/AssignmentPage";
 import RouteErrorElement from "./components/ui/RouteErrorElement";
 import ProtectedRoute from "./components/ui/ProtectedRoute";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
+import EmailVerificationFallback from "./pages/EmailVerificationFallback";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import ContactPage from "./pages/ContactPage";
 import PricingPage from "./pages/PricingPage";
 
 import "./index.css";
@@ -73,7 +77,11 @@ const router = createBrowserRouter(
         element={<StudentRegistrationPage />}
       />
       <Route path="verify-email" element={<EmailVerificationPage />} />
+      <Route path="/EduAI/verify-email" element={<EmailVerificationFallback />} />
       <Route path="pricing" element={<PricingPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/terms" element={<TermsOfServicePage />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
       {/* 🔒 Protected routes */}
       <Route element={<ProtectedRoute />}>
