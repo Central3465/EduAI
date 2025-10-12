@@ -1,10 +1,34 @@
 // src/components/paywall/PaywallScreen.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Shield, Clock, Star, Crown, Zap } from 'lucide-react';
+import { CreditCard, Shield, Clock, Star, Zap, Crown } from 'lucide-react';
+import { useSubscription } from '../../context/SubscriptionContext';
 
 const PaywallScreen = ({ subscription, trialEnded }) => {
   const navigate = useNavigate();
+  const { isAdmin } = useSubscription();
+
+  if (isAdmin()) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Crown className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Access Granted</h2>
+          <p className="text-gray-600 mb-6">
+            Welcome, Administrator! You have full access to all EduAI features.
+          </p>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all"
+          >
+            Access Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">

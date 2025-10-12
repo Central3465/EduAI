@@ -20,6 +20,7 @@ import {
   CreditCard,
   Shield,
   Clock,
+  Crown,
   Loader2 // ✅ Import the loader icon
 } from "lucide-react";
 
@@ -88,7 +89,7 @@ const Dashboard = () => {
           <div className="mt-6 w-64 h-2 bg-gray-700 rounded-full overflow-hidden mx-auto">
             <div className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-progress"></div>
           </div>
-          <style jsx>{`
+          <style jsx='true'>{`
             @keyframes progress {
               0% { width: 0%; }
               100% { width: 100%; }
@@ -101,6 +102,40 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  {userRole === "teacher" && subscription && (
+  <div className="flex items-center space-x-2">
+    {/* ✅ Show Admin Badge */}
+    {subscription.isAdmin ? (
+      <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+        <Crown className="w-3 h-3" />
+        <span>Admin Access</span>
+      </div>
+    ) : (
+      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+        subscription.planId === 'free' 
+          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
+          : subscription.planId === 'basic'
+          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+          : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+      }`}>
+        {subscription.planId === 'free' ? 'Free Trial' : 
+         subscription.planId === 'basic' ? 'Basic Plan' : 
+         subscription.planId === 'pro' ? 'Pro Plan' : 'Enterprise'}
+      </span>
+    )}
+    
+    {/* Trial countdown for non-admins */}
+    {!subscription.isAdmin && subscription.planId === 'free' && subscription.trialEndsAt && (
+      <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-300">
+        <Clock className="w-3 h-3" />
+        <span>
+          {Math.ceil((new Date(subscription.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24))} days left
+        </span>
+      </div>
+    )}
+  </div>
+)}
 
   // ✅ Show paywall if user can't access dashboard
   if (userRole === "teacher" && !canAccessDashboard()) {

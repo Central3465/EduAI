@@ -160,30 +160,7 @@ const ContactPage = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800">Email Us</h3>
-                    <p className="text-gray-600">support@eduai.com</p>
-                    <p className="text-gray-600">sales@eduai.com</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Phone className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Call Us</h3>
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
-                    <p className="text-gray-600">Mon-Fri, 9 AM - 5 PM EST</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Office</h3>
-                    <p className="text-gray-600">123 Education Lane</p>
-                    <p className="text-gray-600">San Francisco, CA 94107</p>
+                    <p className="text-gray-600">contact@bai.studio</p>
                   </div>
                 </div>
                 
@@ -193,8 +170,8 @@ const ContactPage = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800">Support Hours</h3>
-                    <p className="text-gray-600">Monday - Friday: 9 AM - 6 PM EST</p>
-                    <p className="text-gray-600">Saturday: 10 AM - 4 PM EST</p>
+                    <p className="text-gray-600">Monday - Friday: 9 AM - 6 PM GMT</p>
+                    <p className="text-gray-600">Saturday: 10 AM - 4 PM GMT</p>
                     <p className="text-gray-600">Sunday: Closed</p>
                   </div>
                 </div>
@@ -245,7 +222,7 @@ const ContactPage = () => {
               Follow on Twitter
             </button>
             <button className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-              Watch Tutorials
+              Follow BSNode
             </button>
           </div>
         </div>

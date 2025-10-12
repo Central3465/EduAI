@@ -1,34 +1,35 @@
 // src/pages/TeacherLoginPage.jsx
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../context/AppContext"; // ✅ Import context
-import { useNotification } from "../context/NotificationContext";
-import {
-  Lock,
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
+import { useNotification } from '../context/NotificationContext';
+import { 
+  Lock, 
   ChevronRight,
   ExternalLink,
   User,
   Key,
   Mail as MailIcon,
   LogIn,
-} from "lucide-react";
+  AlertTriangle
+} from 'lucide-react';
 
 const TeacherLoginPage = () => {
   const [showLoginForm, setShowLoginForm] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { handleTeacherLogin } = useAppContext(); // ✅ Get from context
+  
+  const { handleTeacherLogin, currentUser, userRole } = useAppContext();
   const { showSuccess, showError } = useNotification();
 
-  // Check if user has saved credentials
   useEffect(() => {
-    const savedEmail = localStorage.getItem("teacherEmail");
-    const savedRemember = localStorage.getItem("teacherRemember") === "true";
-
+    const savedEmail = localStorage.getItem('teacherEmail');
+    const savedRemember = localStorage.getItem('teacherRemember') === 'true';
+    
     if (savedEmail && savedRemember) {
       setEmail(savedEmail);
       setRememberMe(true);
@@ -45,16 +46,15 @@ const TeacherLoginPage = () => {
     if (result.success) {
       showSuccess(result.message);
 
-      // Save credentials if remember me is checked
       if (rememberMe) {
-        localStorage.setItem("teacherEmail", email);
-        localStorage.setItem("teacherRemember", "true");
+        localStorage.setItem('teacherEmail', email);
+        localStorage.setItem('teacherRemember', 'true');
       } else {
-        localStorage.removeItem("teacherEmail");
-        localStorage.removeItem("teacherRemember");
+        localStorage.removeItem('teacherEmail');
+        localStorage.removeItem('teacherRemember');
       }
 
-      navigate("/dashboard");
+      navigate('/dashboard');
     } else {
       showError(result.message);
     }
@@ -63,10 +63,10 @@ const TeacherLoginPage = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("teacherEmail");
-    localStorage.removeItem("teacherRemember");
-    setEmail("");
-    setPassword("");
+    localStorage.removeItem('teacherEmail');
+    localStorage.removeItem('teacherRemember');
+    setEmail('');
+    setPassword('');
     setShowLoginForm(false);
   };
 
@@ -78,7 +78,7 @@ const TeacherLoginPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         {showLoginForm ? (
-          // Login Form for returning teachers
+          // 🔹 Existing Login Form
           <>
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -137,6 +137,13 @@ const TeacherLoginPage = () => {
                     Remember me
                   </span>
                 </label>
+                <button 
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Back
+                </button>
               </div>
 
               <button
@@ -156,47 +163,40 @@ const TeacherLoginPage = () => {
             </form>
           </>
         ) : (
+          // 🔹 Access Code Removed — Warning Notice Instead
           <>
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lock className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Teacher Access Removed
+                Access Code Discontinued
               </h2>
               <p className="text-gray-600">
-                The access code system has been discontinued.
+                The teacher access code system has been discontinued.  
+                Please use an alternative method to sign in or sign up.
               </p>
             </div>
 
-            {/* ⚠️ Warning Box */}
-            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mb-6">
-              <p className="font-medium">Access Code Removed</p>
-              <p className="text-sm mt-1">
-                Please use an alternative method to sign up or log in. You can
-                go directly to the sign-in page below.
-              </p>
-            </div>
-
-            <div className="text-center space-y-4">
-              <button
+            <div className="mt-6 text-center space-y-4">
+              <button 
                 onClick={() => setShowLoginForm(true)}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all flex items-center justify-center"
+                className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center mx-auto"
               >
-                <LogIn className="w-5 h-5 mr-2" />
-                Sign In
+                <LogIn className="w-4 h-4 mr-1" />
+                Sign in with your existing account
               </button>
 
-              <button
-                onClick={() => navigate("/teacher-registration")}
-                className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
+              <button 
+                onClick={() => navigate('/teacher-registration')}
+                className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center mx-auto"
               >
-                <ChevronRight className="w-4 h-4 mr-1" />
-                Don't have an account? Sign up!
+                <ExternalLink className="w-4 h-4 mr-1" />
+                Sign up for a new account
               </button>
 
-              <button
-                onClick={() => navigate("/")}
+              <button 
+                onClick={() => navigate('/')}
                 className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
               >
                 <ChevronRight className="w-4 h-4 mr-1" />

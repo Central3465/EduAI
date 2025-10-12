@@ -22,7 +22,7 @@ const PrivacyPolicyPage = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">1. Introduction</h2>
             <p className="text-gray-600">
-              EduAI ("we", "us", or "our") operates the EduAI website (the "Service"). This page informs 
+              BAI Studios ("we", "us", or "our") operates the EduAI website (the "Service"). This page informs 
               you of our policies regarding the collection, use, and disclosure of personal data when you 
               use our Service and the choices you have associated with that data.
             </p>
@@ -201,7 +201,7 @@ const PrivacyPolicyPage = () => {
               If you have any questions about this Privacy Policy, please contact us:
             </p>
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-800 font-medium">EduAI Privacy Team</p>
+              <p className="text-gray-800 font-medium">BAI Studios Team</p>
               <p className="text-gray-600">Email: contact@bai.studio</p>
             </div>
           </section>
