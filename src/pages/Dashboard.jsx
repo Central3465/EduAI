@@ -21,31 +21,32 @@ import {
   Shield,
   Clock,
   Crown,
-  Loader2 // ✅ Import the loader icon
+  Loader2, // ✅ Import the loader icon
 } from "lucide-react";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
-  
-  // ✅ Get all context values
-  const { 
-    userRole, 
-    currentUser, 
+
+  const {
+    userRole,
+    currentUser,
     logout,
     assignments,
     students,
     setAssignments,
-    setStudents
+    setStudents,
+    // ✅ Add missing context values
+    newAssignment,
+    setNewAssignment,
+    generateAssignment,
+    setShowCreateModal,
+    showCreateModal,
   } = useAppContext();
-  
-  // ✅ Get subscription context
-  const { 
-    canAccessDashboard, 
-    subscription, 
-    trialEnded 
-  } = useSubscription();
-  
+
+  const { canAccessDashboard, subscription, trialEnded, isAdmin, loading } =
+    useSubscription();
+
   const { showSuccess, showError } = useNotification();
 
   // ✅ New state for loading simulation
@@ -60,6 +61,24 @@ const Dashboard = () => {
     // Cleanup timer if component unmounts
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      console.log("=== DASHBOARD DEBUG INFO ===");
+      console.log("currentUser:", currentUser);
+      console.log("userRole:", userRole);
+      console.log("subscription:", subscription);
+      console.log("isAdmin():", isAdmin());
+      console.log("canAccessDashboard():", canAccessDashboard());
+    }
+  }, [
+    currentUser,
+    userRole,
+    subscription,
+    isAdmin,
+    canAccessDashboard,
+    loading,
+  ]);
 
   // ✅ Redirect guests to login (only if not loading)
   useEffect(() => {
@@ -84,15 +103,23 @@ const Dashboard = () => {
           <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <Loader2 className="w-12 h-12 text-white animate-spin" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Preparing Your Dashboard...</h2>
-          <p className="text-gray-300">Please wait while we set everything up for you.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Preparing Your Dashboard...
+          </h2>
+          <p className="text-gray-300">
+            Please wait while we set everything up for you.
+          </p>
           <div className="mt-6 w-64 h-2 bg-gray-700 rounded-full overflow-hidden mx-auto">
             <div className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-progress"></div>
           </div>
-          <style jsx='true'>{`
+          <style jsx="true">{`
             @keyframes progress {
-              0% { width: 0%; }
-              100% { width: 100%; }
+              0% {
+                width: 0%;
+              }
+              100% {
+                width: 100%;
+              }
             }
             .animate-progress {
               animation: progress 10s linear forwards;
@@ -103,43 +130,59 @@ const Dashboard = () => {
     );
   }
 
-  {userRole === "teacher" && subscription && (
-  <div className="flex items-center space-x-2">
-    {/* ✅ Show Admin Badge */}
-    {subscription.isAdmin ? (
-      <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-        <Crown className="w-3 h-3" />
-        <span>Admin Access</span>
-      </div>
-    ) : (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-        subscription.planId === 'free' 
-          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
-          : subscription.planId === 'basic'
-          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-          : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-      }`}>
-        {subscription.planId === 'free' ? 'Free Trial' : 
-         subscription.planId === 'basic' ? 'Basic Plan' : 
-         subscription.planId === 'pro' ? 'Pro Plan' : 'Enterprise'}
-      </span>
-    )}
-    
-    {/* Trial countdown for non-admins */}
-    {!subscription.isAdmin && subscription.planId === 'free' && subscription.trialEndsAt && (
-      <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-300">
-        <Clock className="w-3 h-3" />
-        <span>
-          {Math.ceil((new Date(subscription.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24))} days left
-        </span>
-      </div>
-    )}
-  </div>
-)}
+  {
+    userRole === "teacher" && subscription && (
+      <div className="flex items-center space-x-2">
+        {/* ✅ Show Admin Badge using isAdmin() function */}
+        {!loading && isAdmin() ? ( // ✅ Use isAdmin() function instead of subscription.isAdmin
+          <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+            <Crown className="w-3 h-3" />
+            <span>Admin Access</span>
+          </div>
+        ) : (
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
+              subscription.planId === "free"
+                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                : subscription.planId === "basic"
+                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+            }`}
+          >
+            {subscription.planId === "free"
+              ? "Free Trial"
+              : subscription.planId === "basic"
+              ? "Basic Plan"
+              : subscription.planId === "pro"
+              ? "Pro Plan"
+              : "Enterprise"}
+          </span>
+        )}
 
-  // ✅ Show paywall if user can't access dashboard
-  if (userRole === "teacher" && !canAccessDashboard()) {
-    return <PaywallScreen subscription={subscription} trialEnded={trialEnded} />;
+        {/* Trial countdown for non-admins */}
+        {!isAdmin() &&
+          subscription.planId === "free" &&
+          subscription.trialEndsAt && ( // ✅ Use isAdmin() here too
+            <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-300">
+              <Clock className="w-3 h-3" />
+              <span>
+                {Math.ceil(
+                  (new Date(subscription.trialEndsAt) - new Date()) /
+                    (1000 * 60 * 60 * 24)
+                )}{" "}
+                days left
+              </span>
+            </div>
+          )}
+      </div>
+    );
+  }
+
+  if (userRole === "teacher" && !canAccessDashboard() && !isAdmin()) {
+    // ✅ Add isAdmin() check
+    return (
+      <PaywallScreen subscription={subscription} trialEnded={trialEnded} />
+    );
   }
 
   return (
@@ -161,44 +204,55 @@ const Dashboard = () => {
               {/* Subscription Status Badge (for teachers) */}
               {userRole === "teacher" && subscription && (
                 <div className="flex items-center space-x-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    subscription.planId === 'free' 
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
-                      : subscription.planId === 'basic'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                  }`}>
-                    {subscription.planId === 'free' ? 'Free Trial' : 
-                     subscription.planId === 'basic' ? 'Basic Plan' : 
-                     subscription.planId === 'pro' ? 'Pro Plan' : 'Enterprise'}
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      subscription.planId === "free"
+                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                        : subscription.planId === "basic"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                    }`}
+                  >
+                    {subscription.planId === "free"
+                      ? "Free Trial"
+                      : subscription.planId === "basic"
+                      ? "Basic Plan"
+                      : subscription.planId === "pro"
+                      ? "Pro Plan"
+                      : "Enterprise"}
                   </span>
-                  
-                  {subscription.planId === 'free' && subscription.trialEndsAt && (
-                    <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-300">
-                      <Clock className="w-3 h-3" />
-                      <span>
-                        {Math.ceil((new Date(subscription.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24))} days left
-                      </span>
-                    </div>
-                  )}
+
+                  {subscription.planId === "free" &&
+                    subscription.trialEndsAt && (
+                      <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-300">
+                        <Clock className="w-3 h-3" />
+                        <span>
+                          {Math.ceil(
+                            (new Date(subscription.trialEndsAt) - new Date()) /
+                              (1000 * 60 * 60 * 24)
+                          )}{" "}
+                          days left
+                        </span>
+                      </div>
+                    )}
                 </div>
               )}
 
               <div className="flex items-center space-x-3">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                    {currentUser?.name?.charAt(0) || 'U'}
+                    {currentUser?.name?.charAt(0) || "U"}
                   </div>
                   <div className="hidden md:block">
                     <div className="text-sm font-medium text-gray-800 dark:text-white">
-                      {currentUser?.name || 'User'}
+                      {currentUser?.name || "User"}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-300">
-                      {userRole === 'teacher' ? 'Teacher' : 'Student'}
+                      {userRole === "teacher" ? "Teacher" : "Student"}
                     </div>
                   </div>
                 </div>
-                
+
                 <button
                   onClick={handleLogout}
                   className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
@@ -243,9 +297,13 @@ const Dashboard = () => {
               activeTab={activeTab}
               assignments={assignments}
               students={students}
+              newAssignment={newAssignment} 
+              setNewAssignment={setNewAssignment} 
+              generateAssignment={generateAssignment} 
               setAssignments={setAssignments}
               setStudents={setStudents}
-              // ... other props
+              setShowCreateModal={setShowCreateModal} 
+              showCreateModal={showCreateModal} 
             />
           ) : (
             <StudentDashboard

@@ -8,6 +8,8 @@ import React, {
 } from "react";
 
 const AppContext = createContext();
+const SubscriptionContext = createContext();
+const NotificationContext = createContext();
 
 export const useAppContext = () => useContext(AppContext);
 

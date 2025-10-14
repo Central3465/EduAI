@@ -11,11 +11,12 @@ import {
   Key,
   Mail as MailIcon,
   LogIn,
-  AlertTriangle
+  UserPlus,
+  Home
 } from 'lucide-react';
 
 const TeacherLoginPage = () => {
-  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(true); // ✅ Default to login form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -26,6 +27,7 @@ const TeacherLoginPage = () => {
   const { handleTeacherLogin, currentUser, userRole } = useAppContext();
   const { showSuccess, showError } = useNotification();
 
+  // Check if user has saved credentials
   useEffect(() => {
     const savedEmail = localStorage.getItem('teacherEmail');
     const savedRemember = localStorage.getItem('teacherRemember') === 'true';
@@ -33,7 +35,6 @@ const TeacherLoginPage = () => {
     if (savedEmail && savedRemember) {
       setEmail(savedEmail);
       setRememberMe(true);
-      setShowLoginForm(true);
     }
   }, []);
 
@@ -46,6 +47,7 @@ const TeacherLoginPage = () => {
     if (result.success) {
       showSuccess(result.message);
 
+      // Save credentials if remember me is checked
       if (rememberMe) {
         localStorage.setItem('teacherEmail', email);
         localStorage.setItem('teacherRemember', 'true');
@@ -67,7 +69,6 @@ const TeacherLoginPage = () => {
     localStorage.removeItem('teacherRemember');
     setEmail('');
     setPassword('');
-    setShowLoginForm(false);
   };
 
   useEffect(() => {
@@ -78,7 +79,7 @@ const TeacherLoginPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         {showLoginForm ? (
-          // 🔹 Existing Login Form
+          // 🔹 Login Form
           <>
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -142,7 +143,7 @@ const TeacherLoginPage = () => {
                   onClick={handleLogout}
                   className="text-sm text-blue-600 hover:text-blue-800"
                 >
-                  Back
+                  Forgot password?
                 </button>
               </div>
 
@@ -161,46 +162,72 @@ const TeacherLoginPage = () => {
                 )}
               </button>
             </form>
+
+            <div className="mt-6 text-center">
+              <button 
+                onClick={() => setShowLoginForm(false)}
+                className="text-blue-600 hover:text-blue-800 flex items-center justify-center mx-auto"
+              >
+                <UserPlus className="w-4 h-4 mr-1" />
+                Don't have an account? Sign up
+              </button>
+              
+              <button 
+                onClick={() => navigate('/')}
+                className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto mt-2"
+              >
+                <Home className="w-4 h-4 mr-1" />
+                Back to homepage
+              </button>
+            </div>
           </>
         ) : (
-          // 🔹 Access Code Removed — Warning Notice Instead
+          // 🔹 Sign Up Prompt
           <>
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserPlus className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Access Code Discontinued
+                Create Your Account
               </h2>
               <p className="text-gray-600">
-                The teacher access code system has been discontinued.  
-                Please use an alternative method to sign in or sign up.
+                Join EduAI to create AI-powered assignments
               </p>
             </div>
 
-            <div className="mt-6 text-center space-y-4">
-              <button 
-                onClick={() => setShowLoginForm(true)}
-                className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center mx-auto"
-              >
-                <LogIn className="w-4 h-4 mr-1" />
-                Sign in with your existing account
-              </button>
-
-              <button 
+            <div className="space-y-4">
+              <button
                 onClick={() => navigate('/teacher-registration')}
-                className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center mx-auto"
+                className="w-full bg-gradient-to-r from-green-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-700 transition-all flex items-center justify-center space-x-2"
               >
-                <ExternalLink className="w-4 h-4 mr-1" />
-                Sign up for a new account
+                <UserPlus className="w-4 h-4" />
+                <span>Sign Up as Teacher</span>
               </button>
 
-              <button 
-                onClick={() => navigate('/')}
-                className="text-gray-600 hover:text-gray-800 flex items-center justify-center mx-auto"
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowLoginForm(true)}
+                className="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all flex items-center justify-center space-x-2"
               >
-                <ChevronRight className="w-4 h-4 mr-1" />
-                Back to homepage
+                <LogIn className="w-4 h-4" />
+                <span>Already have an account? Sign in</span>
+              </button>
+
+              <button
+                onClick={() => navigate('/')}
+                className="w-full bg-gray-50 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all flex items-center justify-center space-x-2"
+              >
+                <Home className="w-4 h-4" />
+                <span>Back to homepage</span>
               </button>
             </div>
           </>

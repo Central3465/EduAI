@@ -27,19 +27,14 @@ import EmailVerificationPage from "./pages/EmailVerificationPage";
 import EmailVerificationFallback from "./pages/EmailVerificationFallback";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import JobDetailPage from "./pages/JobDetailPage";
 import ContactPage from "./pages/ContactPage";
 import PricingPage from "./pages/PricingPage";
+import CareersPage from "./pages/CareersPage";
 
 import "./index.css";
 
-// Root layout component
-const RootLayout = () => {
-  return (
-    <AppProvider>
-      <Outlet />
-    </AppProvider>
-  );
-};
+const RootLayout = () => <Outlet />;
 
 // Add this to catch ALL navigation events
 window.addEventListener('beforeunload', (event) => {
@@ -80,6 +75,8 @@ const router = createBrowserRouter(
       <Route path="/EduAI/verify-email" element={<EmailVerificationFallback />} />
       <Route path="pricing" element={<PricingPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/careers" element={<CareersPage />} />
+      <Route path="/job" element={<JobDetailPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
@@ -98,13 +95,15 @@ const router = createBrowserRouter(
   }
 );
 
-// Wrap the entire app with NotificationProvider
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <SubscriptionProvider>
-    <NotificationProvider>
-      <RouterProvider router={router} />
-    </NotificationProvider>
-    </SubscriptionProvider>
+    <AppProvider>
+      <SubscriptionProvider>
+        <NotificationProvider>
+          <RouterProvider router={router} />
+        </NotificationProvider>
+      </SubscriptionProvider>
+    </AppProvider>
   </React.StrictMode>
 );
+

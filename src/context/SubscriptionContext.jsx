@@ -1,64 +1,93 @@
 // src/context/SubscriptionContext.jsx
-import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
-import { useAppContext } from './AppContext';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useCallback,
+  useEffect,
+} from "react";
+import { useAppContext } from "./AppContext";
 
 const SubscriptionContext = createContext();
 
 export const useSubscription = () => {
   const context = useContext(SubscriptionContext);
   if (!context) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
+    throw new Error(
+      "useSubscription must be used within a SubscriptionProvider"
+    );
   }
   return context;
 };
 
 // ✅ Add your admin email here
 const ADMIN_EMAILS = [
-  'hanlinbai667@gmail.com', // Your email
+  "hanlinbai667@gmail.com", // Your email
+  "admin@eduai.com", // Example - add more if needed
 ];
 
 export const SubscriptionProvider = ({ children }) => {
   // ✅ Safely get context values with defaults
   const appContext = useAppContext();
   const { currentUser, userRole } = appContext || {}; // ✅ Safe destructuring with fallback
-  
-  const [subscription, setSubscription] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [trialEnded, setTrialEnded] = useState(false);
 
-  // Load subscription from localStorage
+  const initialSubscription =
+    currentUser?.email && ADMIN_EMAILS.includes(currentUser.email)
+      ? {
+          id: "admin_override",
+          userId: currentUser.email,
+          planId: "enterprise",
+          status: "active",
+          isAdmin: true,
+        }
+      : null;
+
+  const [subscription, setSubscription] = useState(initialSubscription);
+
+  console.log("Checking admin status for:", currentUser?.email);
+
+  // ✅ Load subscription from localStorage
   useEffect(() => {
     const loadSubscription = () => {
-      // ✅ Only load subscription if user is logged in as teacher
-      if (userRole === 'teacher' && currentUser?.email) {
-        // ✅ Check if user is admin first
-        if (ADMIN_EMAILS.includes(currentUser.email)) {
-          // Admin gets full access
-          setSubscription({
-            id: 'admin_override',
-            userId: currentUser.email,
-            planId: 'enterprise',
-            status: 'active',
-            isAdmin: true,
-            features: [
-              'Unlimited everything',
-              'Admin dashboard access',
-              'Full AI features',
-              'All premium tools',
-              'Priority support'
-            ]
-          });
-          setLoading(false);
-          return;
-        }
+      console.log("Checking admin status for:", currentUser?.email);
 
+      if (
+        currentUser?.email &&
+        ADMIN_EMAILS.map((e) => e.toLowerCase()).includes(
+          currentUser.email.toLowerCase()
+        )
+      ) {
+        console.log("=== ADMIN DETECTED ===", currentUser.email);
+        setSubscription({
+          id: "admin_override",
+          userId: currentUser.email,
+          planId: "enterprise",
+          status: "active",
+          isAdmin: true,
+          features: [
+            "Unlimited everything",
+            "Admin dashboard access",
+            "Full AI features",
+            "All premium tools",
+            "Priority support",
+          ],
+        });
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Only load subscription for teachers
+      if (userRole === "teacher" && currentUser?.email) {
         const saved = localStorage.getItem(`subscription_${currentUser.email}`);
         if (saved) {
           const sub = JSON.parse(saved);
           setSubscription(sub);
-          
+
           // Check if trial has ended
-          if (sub.planId === 'free' && sub.trialEndsAt) {
+          if (sub.planId === "free" && sub.trialEndsAt) {
             const trialEndDate = new Date(sub.trialEndsAt);
             const now = new Date();
             if (now > trialEndDate) {
@@ -73,208 +102,222 @@ export const SubscriptionProvider = ({ children }) => {
       setLoading(false);
     };
 
-    loadSubscription();
-  }, [currentUser, userRole]);
+    if (currentUser !== undefined) {
+      loadSubscription();
+    }
+  }, [currentUser, userRole]); // ✅ Dependencies
 
-  // Save subscription to localStorage
+  // ✅ Save subscription to localStorage
   useEffect(() => {
     if (subscription && currentUser?.email && !subscription.isAdmin) {
-      localStorage.setItem(`subscription_${currentUser.email}`, JSON.stringify(subscription));
+      localStorage.setItem(
+        `subscription_${currentUser.email}`,
+        JSON.stringify(subscription)
+      );
     }
   }, [subscription, currentUser]);
 
-  // Create free trial subscription
+  // ✅ Create free trial subscription
   const createFreeTrial = useCallback(() => {
     // ✅ Check if user is admin
     if (currentUser?.email && ADMIN_EMAILS.includes(currentUser.email)) {
       setSubscription({
-        id: 'admin_override',
+        id: "admin_override",
         userId: currentUser.email,
-        planId: 'enterprise',
-        status: 'active',
+        planId: "enterprise",
+        status: "active",
         isAdmin: true,
         features: [
-          'Unlimited everything',
-          'Admin dashboard access',
-          'Full AI features',
-          'All premium tools',
-          'Priority support'
-        ]
+          "Unlimited everything",
+          "Admin dashboard access",
+          "Full AI features",
+          "All premium tools",
+          "Priority support",
+        ],
       });
       return;
     }
 
-    if (userRole === 'teacher' && currentUser?.email) {
+    if (userRole === "teacher" && currentUser?.email) {
       const trialEndsAt = new Date();
       trialEndsAt.setDate(trialEndsAt.getDate() + 7); // 7-day trial
-      
+
       const newSubscription = {
         id: `sub_${Date.now()}`,
         userId: currentUser.email,
-        planId: 'free',
-        status: 'active',
+        planId: "free",
+        status: "active",
         startDate: new Date().toISOString(),
         trialEndsAt: trialEndsAt.toISOString(),
         features: [
-          '7-day free trial',
-          'Create up to 5 assignments',
-          'Basic AI question generation',
-          'Up to 30 students',
-          'Basic analytics'
-        ]
-      };
-
-      setSubscription(newSubscription);
-      return newSubscription;
-    }
-    return null;
-  }, [currentUser, userRole]);
-
-  // Upgrade subscription
-  const upgradeSubscription = useCallback((planId) => {
-    // ✅ Check if user is admin
-    if (currentUser?.email && ADMIN_EMAILS.includes(currentUser.email)) {
-      setSubscription({
-        id: 'admin_override',
-        userId: currentUser.email,
-        planId: 'enterprise',
-        status: 'active',
-        isAdmin: true,
-        features: [
-          'Unlimited everything',
-          'Admin dashboard access',
-          'Full AI features',
-          'All premium tools',
-          'Priority support'
-        ]
-      });
-      return {
-        id: 'admin_override',
-        planId: 'enterprise',
-        status: 'active',
-        isAdmin: true
-      };
-    }
-
-    if (userRole === 'teacher' && currentUser?.email) {
-      const planFeatures = {
-        'basic': [
-          'Unlimited assignments',
-          'Advanced AI question generation',
-          'Up to 100 students',
-          'Detailed analytics',
-          'Gradebook integration',
-          'Priority email support'
+          "7-day free trial",
+          "Create up to 5 assignments",
+          "Basic AI question generation",
+          "Up to 30 students",
+          "Basic analytics",
         ],
-        'pro': [
-          'Everything in Basic',
-          'Unlimited students',
-          'Class management',
-          'Custom branding',
-          'Advanced analytics',
-          '24/7 priority support',
-          'API access'
-        ]
       };
-      
-      const newSubscription = {
-        id: `sub_${Date.now()}`,
-        userId: currentUser.email,
-        planId: planId,
-        status: 'active',
-        startDate: new Date().toISOString(),
-        features: planFeatures[planId] || []
-      };
-      
+
       setSubscription(newSubscription);
       return newSubscription;
     }
     return null;
   }, [currentUser, userRole]);
 
-  // Cancel subscription
+  // ✅ Upgrade subscription
+  const upgradeSubscription = useCallback(
+    (planId) => {
+      // ✅ Check if user is admin
+      if (currentUser?.email && ADMIN_EMAILS.includes(currentUser.email)) {
+        setSubscription({
+          id: "admin_override",
+          userId: currentUser.email,
+          planId: "enterprise",
+          status: "active",
+          isAdmin: true,
+          features: [
+            "Unlimited everything",
+            "Admin dashboard access",
+            "Full AI features",
+            "All premium tools",
+            "Priority support",
+          ],
+        });
+        return {
+          id: "admin_override",
+          planId: "enterprise",
+          status: "active",
+          isAdmin: true,
+        };
+      }
+
+      if (userRole === "teacher" && currentUser?.email) {
+        const planFeatures = {
+          basic: [
+            "Unlimited assignments",
+            "Advanced AI question generation",
+            "Up to 100 students",
+            "Detailed analytics",
+            "Gradebook integration",
+            "Priority email support",
+          ],
+          pro: [
+            "Everything in Basic",
+            "Unlimited students",
+            "Class management",
+            "Custom branding",
+            "Advanced analytics",
+            "24/7 priority support",
+            "API access",
+          ],
+        };
+
+        const newSubscription = {
+          id: `sub_${Date.now()}`,
+          userId: currentUser.email,
+          planId: planId,
+          status: "active",
+          startDate: new Date().toISOString(),
+          features: planFeatures[planId] || [],
+        };
+
+        setSubscription(newSubscription);
+        return newSubscription;
+      }
+      return null;
+    },
+    [currentUser, userRole]
+  );
+
+  // ✅ Cancel subscription
   const cancelSubscription = useCallback(() => {
     // ✅ Admins can't cancel their override
     if (subscription?.isAdmin) {
-      console.log('Admin override cannot be cancelled');
+      console.log("Admin override cannot be cancelled");
       return;
     }
-    
+
     if (subscription) {
-      setSubscription(prev => ({
+      setSubscription((prev) => ({
         ...prev,
-        status: 'cancelled',
-        cancelledAt: new Date().toISOString()
+        status: "cancelled",
+        cancelledAt: new Date().toISOString(),
       }));
     }
   }, [subscription]);
 
-  // Check if user can access dashboard
+  // ✅ Check if user can access dashboard
   const canAccessDashboard = useCallback(() => {
-  // ✅ If no user context at all, return false (guest)
-  if (!appContext) return false;
-  
-  // ✅ Admins always have access
-  if (subscription?.isAdmin) return true;
-  
-  // Students always have access
-  if (userRole !== 'teacher') return true;
-  
-  // No subscription for teachers = no access
-  if (!subscription) return false;
-  
-  // Free trial users can access during trial period
-  if (subscription.planId === 'free' && !trialEnded) {
-    return true;
-  }
-  
-  // Paid users can access
-  if (['basic', 'pro', 'enterprise'].includes(subscription.planId) && 
-      subscription.status === 'active') {
-    return true;
-  }
-  
-  return false;
-}, [subscription, userRole, trialEnded, appContext]);
+    // ✅ Admins always have access
+    if (subscription?.isAdmin) return true;
 
-  // Check if user can use AI features
+    if (userRole !== "teacher") return true; // Students always have access
+
+    if (!subscription) return false;
+
+    // Free trial users can access during trial period
+    if (subscription.planId === "free" && !trialEnded) {
+      return true;
+    }
+
+    // Paid users can access
+    if (
+      ["basic", "pro", "enterprise"].includes(subscription.planId) &&
+      subscription.status === "active"
+    ) {
+      return true;
+    }
+
+    return false;
+  }, [subscription, userRole, trialEnded]);
+
+  // ✅ Check if user can use AI features
   const canUseAI = useCallback(() => {
-    // ✅ If no user context at all, return false (guest)
-    if (!appContext) return false;
-    
     // ✅ Admins always have AI access
     if (subscription?.isAdmin) return true;
-    
-    if (userRole === 'teacher') {
+
+    if (userRole === "teacher") {
       // Teachers need paid plan for AI
-      return subscription && 
-             ['basic', 'pro', 'enterprise'].includes(subscription.planId) && 
-             subscription.status === 'active';
+      return (
+        subscription &&
+        ["basic", "pro", "enterprise"].includes(subscription.planId) &&
+        subscription.status === "active"
+      );
     } else {
       // Students need paid plan for AI Recommendations
-      return subscription && 
-             ['basic', 'pro', 'enterprise'].includes(subscription.planId) && 
-             subscription.status === 'active';
+      return (
+        subscription &&
+        ["basic", "pro", "enterprise"].includes(subscription.planId) &&
+        subscription.status === "active"
+      );
     }
-  }, [subscription, userRole, appContext]);
+  }, [subscription, userRole]);
 
-  // ✅ Check if user is admin
+  // ✅ Check if user is admin (NEW FUNCTION)
   const isAdmin = useCallback(() => {
+    // ✅ Check if current user is in admin list
+    if (currentUser?.email && ADMIN_EMAILS.includes(currentUser.email)) {
+      return true;
+    }
+
+    // ✅ Check if subscription marks user as admin
     return subscription?.isAdmin || false;
-  }, [subscription]);
+  }, [currentUser, subscription]);
 
   return (
-    <SubscriptionContext.Provider value={{
-      subscription,
-      loading,
-      trialEnded,
-      createFreeTrial,
-      upgradeSubscription,
-      cancelSubscription,
-      canAccessDashboard,
-      canUseAI,
-      isAdmin
-    }}>
+    <SubscriptionContext.Provider
+      value={{
+        subscription,
+        loading,
+        trialEnded,
+        createFreeTrial,
+        upgradeSubscription,
+        cancelSubscription,
+        canAccessDashboard,
+        canUseAI,
+        isAdmin, // ✅ Export isAdmin function
+      }}
+    >
       {children}
     </SubscriptionContext.Provider>
   );

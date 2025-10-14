@@ -41,25 +41,31 @@ const TeacherDashboard = ({
   const [isCreatingAssignment, setIsCreatingAssignment] = useState(false);
   const [activeAssignmentTab, setActiveAssignmentTab] = useState("analytics"); // For assignment detail view
 
-  // Handle creating a new assignment
   const handleCreateAssignment = (assignmentData) => {
-    const newAssignment = {
-      id: Date.now(),
-      title: assignmentData.title,
-      subject: assignmentData.subject,
-      dueDate: assignmentData.dueDate,
-      status: "active",
-      questions: assignmentData.questions,
-      aiGenerated: assignmentData.aiGenerated,
-      difficulty: assignmentData.difficulty,
-      totalQuestions: assignmentData.questions.length,
-      submissions: 0,
-      grade: null, // Will be calculated when students submit
-    };
-
-    setAssignments((prev) => [...prev, newAssignment]);
-    setIsCreatingAssignment(false);
+  const newAssignment = {
+    id: Date.now(),
+    title: assignmentData.title,
+    subject: assignmentData.subject,
+    dueDate: assignmentData.dueDate,
+    status: "active",
+    questions: assignmentData.questions,
+    aiGenerated: assignmentData.aiGenerated,
+    difficulty: assignmentData.difficulty,
+    totalQuestions: assignmentData.questions.length,
+    submissions: 0,
+    grade: null,
   };
+
+  // ✅ Add safety check
+  if (typeof setAssignments === 'function') {
+    setAssignments((prev) => [...prev, newAssignment]);
+  } else {
+    console.error('setAssignments is not a function. Check if it was passed from parent.');
+    // Fallback: you could show an error message or handle it differently
+  }
+  
+  setIsCreatingAssignment(false);
+};
 
   if (activeTab === "dashboard") {
     return (
