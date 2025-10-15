@@ -11,6 +11,7 @@ import {
 import { NotificationProvider } from "./context/NotificationContext"; // Import NotificationProvider
 import { AppProvider } from "./context/AppContext";
 import { SubscriptionProvider } from "./context/SubscriptionContext";
+import { BlogProvider } from "./context/BlogContext"; // Import BlogProvider
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -31,6 +32,9 @@ import JobDetailPage from "./pages/JobDetailPage";
 import ContactPage from "./pages/ContactPage";
 import PricingPage from "./pages/PricingPage";
 import CareersPage from "./pages/CareersPage";
+import BlogPage from "./pages/BlogPage";
+import RoadmapPage from "./pages/RoadmapPage";
+import CommunityPage from "./pages/CommunityPage";
 
 import "./index.css";
 
@@ -79,6 +83,9 @@ const router = createBrowserRouter(
       <Route path="/job" element={<JobDetailPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/blog" element={<BlogPage />} />
+      <Route path="/roadmap" element={<RoadmapPage />} />
+      <Route path="/community" element={<CommunityPage />} />
 
       {/* 🔒 Protected routes */}
       <Route element={<ProtectedRoute />}>
@@ -98,11 +105,13 @@ const router = createBrowserRouter(
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AppProvider>
+      <BlogProvider>
       <SubscriptionProvider>
         <NotificationProvider>
           <RouterProvider router={router} />
         </NotificationProvider>
       </SubscriptionProvider>
+      </BlogProvider>
     </AppProvider>
   </React.StrictMode>
 );
