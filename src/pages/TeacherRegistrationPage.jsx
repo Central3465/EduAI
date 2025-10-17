@@ -175,9 +175,9 @@ const TeacherRegistrationPage = () => {
           </div>
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-blue-800 text-sm">
-              <strong>Note:</strong> A verification email has been sent to your
-              inbox. Please check your email and click the verification link to
-              activate your account.
+              <strong>Forgot your verification code?</strong> Check your browser
+              console or localStorage for the code. It was shown during
+              registration.
             </p>
           </div>
           <button

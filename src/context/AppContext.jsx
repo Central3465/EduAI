@@ -87,149 +87,114 @@ export const AppProvider = ({ children }) => {
     });
   }, []);
 
-  // Update handleStudentRegistration
-  const handleStudentRegistration = useCallback(
-    (userData) => {
-      console.log("=== 🎓 STUDENT REGISTRATION STARTED ===");
-      setAuthLoading(true);
+  // handleStudentRegistration moved/removed to avoid duplicate declaration; implementation exists later in this file.
 
-      try {
-        // Check if email already exists
-        const existingTeacher = users.teachers.find(
-          (t) => t.email === userData.email
-        );
-        const existingStudent = users.students.find(
-          (s) => t.email === userData.email
-        );
+  // src/context/AppContext.jsx
+const handleTeacherRegistration = useCallback((userData) => {
+  setAuthLoading(true);
 
-        if (existingTeacher || existingStudent) {
-          throw new Error("Email already registered");
-        }
+  try {
+    // Check if email already exists
+    const existingTeacher = users.teachers.find(t => t.email === userData.email);
+    const existingStudent = users.students.find(s => s.email === userData.email);
+    
+    if (existingTeacher || existingStudent) {
+      throw new Error('Email already registered');
+    }
 
-        // Verify invitation code
-        if (userData.invitationCode !== "STUDENT2024") {
-          throw new Error("Invalid invitation code");
-        }
+    // Generate verification code
+    const verificationCode = generateVerificationCode();
+    const newTeacher = {
+      id: Date.now().toString(),
+      email: userData.email,
+      password: userData.password,
+      accessCode: userData.accessCode || 'TEACHER2024',
+      createdAt: new Date().toISOString(),
+      role: 'teacher',
+      verified: false, // ✅ NOT YET VERIFIED
+      name: userData.name || 'Teacher',
+      verificationCode: verificationCode, // ✅ Store code
+      verificationExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+    };
 
-        const verificationCode = generateVerificationCode();
-        const newStudent = {
-          id: `stu_${Date.now()}`,
-          name: userData.name,
-          email: userData.email,
-          password: userData.password,
-          invitationCode: userData.invitationCode,
-          createdAt: new Date().toISOString(),
-          role: "student",
-          verified: false, // ✅ NOT YET VERIFIED
-          grade: "A",
-          verificationCode: verificationCode,
-          verificationExpiry: new Date(
-            Date.now() + 24 * 60 * 60 * 1000
-          ).toISOString(), // 24 hours
-        };
+    setUsers(prev => ({
+      ...prev,
+      teachers: [...prev.teachers, newTeacher]
+    }));
 
-        setUsers((prev) => ({
-          ...prev,
-          students: [...prev.students, newStudent],
-        }));
+    // ✅ Store verification code in localStorage (instead of sending email)
+    localStorage.setItem(`verification_${userData.email}`, JSON.stringify({
+      code: verificationCode,
+      expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      role: 'teacher'
+    }));
 
-        // Store verification code
-        setVerificationCodes((prev) => ({
-          ...prev,
-          students: {
-            ...prev.students,
-            [userData.email]: {
-              code: verificationCode,
-              expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            },
-          },
-        }));
+    setAuthLoading(false);
+    return { 
+      success: true, 
+      message: `Registration successful! Your verification code is: ${verificationCode}. Please save this code for login.` 
+    };
+  } catch (error) {
+    setAuthLoading(false);
+    return { success: false, message: error.message };
+  }
+}, [users, generateVerificationCode]);
 
-        // Send verification email
-        sendVerificationEmail(newStudent.email, verificationCode, "student");
+const handleStudentRegistration = useCallback((userData) => {
+  setAuthLoading(true);
 
-        setAuthLoading(false);
-        return {
-          success: true,
-          message:
-            "Registration successful! Please check your email to verify your account.",
-        };
-      } catch (error) {
-        setAuthLoading(false);
-        return { success: false, message: error.message };
-      }
-    },
-    [users, generateVerificationCode, sendVerificationEmail]
-  );
+  try {
+    // Check if email already exists
+    const existingTeacher = users.teachers.find(t => t.email === userData.email);
+    const existingStudent = users.students.find(s => s.email === userData.email);
+    
+    if (existingTeacher || existingStudent) {
+      throw new Error('Email already registered');
+    }
 
-  // Update handleTeacherRegistration
-  const handleTeacherRegistration = useCallback(
-    (userData) => {
-      console.log("=== 👨‍🏫 TEACHER REGISTRATION STARTED ===");
-      setAuthLoading(true);
+    // Verify invitation code
+    if (userData.invitationCode !== 'STUDENT2024') {
+      throw new Error('Invalid invitation code');
+    }
 
-      try {
-        // Check if email already exists
-        const existingTeacher = users.teachers.find(
-          (t) => t.email === userData.email
-        );
-        const existingStudent = users.students.find(
-          (s) => s.email === userData.email
-        );
+    // Generate verification code
+    const verificationCode = generateVerificationCode();
+    const newStudent = {
+      id: Date.now().toString(),
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      invitationCode: userData.invitationCode,
+      createdAt: new Date().toISOString(),
+      role: 'student',
+      verified: false, // ✅ NOT YET VERIFIED
+      grade: 'A',
+      verificationCode: verificationCode, // ✅ Store code
+      verificationExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+    };
 
-        if (existingTeacher || existingStudent) {
-          throw new Error("Email already registered");
-        }
+    setUsers(prev => ({
+      ...prev,
+      students: [...prev.students, newStudent]
+    }));
 
-        const verificationCode = generateVerificationCode();
-        const newTeacher = {
-          id: `tch_${Date.now()}`,
-          email: userData.email,
-          password: userData.password,
-          accessCode: userData.accessCode || "TEACHER2024",
-          createdAt: new Date().toISOString(),
-          role: "teacher",
-          verified: false, // ✅ NOT YET VERIFIED
-          name: userData.name || "Teacher",
-          verificationCode: verificationCode,
-          verificationExpiry: new Date(
-            Date.now() + 24 * 60 * 60 * 1000
-          ).toISOString(), // 24 hours
-        };
+    // ✅ Store verification code in localStorage (instead of sending email)
+    localStorage.setItem(`verification_${userData.email}`, JSON.stringify({
+      code: verificationCode,
+      expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      role: 'student'
+    }));
 
-        setUsers((prev) => ({
-          ...prev,
-          teachers: [...prev.teachers, newTeacher],
-        }));
-
-        // Store verification code
-        setVerificationCodes((prev) => ({
-          ...prev,
-          teachers: {
-            ...prev.teachers,
-            [userData.email]: {
-              code: verificationCode,
-              expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            },
-          },
-        }));
-
-        // Send verification email
-        sendVerificationEmail(newTeacher.email, verificationCode, "teacher");
-
-        setAuthLoading(false);
-        return {
-          success: true,
-          message:
-            "Registration successful! Please check your email to verify your account.",
-        };
-      } catch (error) {
-        setAuthLoading(false);
-        return { success: false, message: error.message };
-      }
-    },
-    [users, generateVerificationCode, sendVerificationEmail]
-  );
+    setAuthLoading(false);
+    return { 
+      success: true, 
+      message: `Registration successful! Your verification code is: ${verificationCode}. Please save this code for login.` 
+    };
+  } catch (error) {
+    setAuthLoading(false);
+    return { success: false, message: error.message };
+  }
+}, [users, generateVerificationCode]);
 
   // Save to localStorage
   React.useEffect(() => {

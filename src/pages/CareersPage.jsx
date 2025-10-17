@@ -1,15 +1,15 @@
 // src/pages/CareersPage.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Search, 
-  MapPin, 
-  DollarSign, 
-  Briefcase, 
-  Clock, 
-  Users, 
-  Building, 
-  Mail, 
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Search,
+  MapPin,
+  DollarSign,
+  Briefcase,
+  Clock,
+  Users,
+  Building,
+  Mail,
   ExternalLink,
   Filter,
   X,
@@ -20,167 +20,51 @@ import {
   Coffee,
   Wifi,
   Heart,
-  Home
-} from 'lucide-react';
+  Home,
+} from "lucide-react";
 
 const CareersPage = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
-    location: 'all',
-    salary: 'all',
-    experience: 'all',
-    department: 'all'
+    location: "all",
+    salary: "all",
+    experience: "all",
+    department: "all",
   });
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
 
-  // Mock job data
   const mockJobs = [
     {
       id: 1,
-      title: 'Senior Frontend Developer',
-      department: 'Engineering',
-      location: 'Remote',
-      salary: '$120,000 - $150,000',
-      experience: 'senior',
-      type: 'Full-time',
-      posted: '2 days ago',
-      description: 'Join our engineering team to build cutting-edge educational technology platforms. Work with React, Vite, and modern web technologies.',
-      requirements: [
-        '5+ years of React experience',
-        'Experience with modern build tools (Vite, Webpack)',
-        'Strong TypeScript skills',
-        'Familiarity with AI/ML technologies'
+      title: "QA Tester",
+      department: "Product",
+      location: "Remote",
+      salary: "£20,000 - £35,000",
+      experience: "entry",
+      type: "Part-time",
+      posted: "17.10.2025",
+      description:
+        "Join our development team to test upcoming features and ensure quality across our AI-powered education platform.",
+      responsibilities: [
+        "Test new platform features across browsers and devices",
+        "Log bugs and collaborate with developers to fix them",
+        "Write and maintain test cases",
       ],
-      benefits: [
-        'Remote work flexibility',
-        'Health insurance',
-        '401(k) matching',
-        'Unlimited PTO',
-        'Learning stipend'
-      ]
+      requirements: [
+        "Attention to detail",
+        "Experience with testing tools",
+        "Basic understanding of software development",
+        "Good communication skills",
+      ],
+      benefits: ["Competitive salary", "Remote work", "Flexible hours"],
+      team: {
+        name: "QA Team",
+        size: 5,
+        description: "A tight-knit crew ensuring every release is top quality.",
+      },
     },
-    {
-      id: 2,
-      title: 'AI Research Scientist',
-      department: 'AI/ML',
-      location: 'San Francisco, CA',
-      salary: '$140,000 - $180,000',
-      experience: 'senior',
-      type: 'Full-time',
-      posted: '1 week ago',
-      description: 'Lead AI research initiatives to improve educational outcomes. Work with cutting-edge machine learning models and natural language processing.',
-      requirements: [
-        'PhD in Computer Science, AI, or related field',
-        'Experience with TensorFlow/PyTorch',
-        'Published research in ML/AI',
-        'Strong Python skills'
-      ],
-      benefits: [
-        'Stock options',
-        'Research funding',
-        'Conference attendance',
-        'Flexible schedule',
-        'Health insurance'
-      ]
-    },
-    {
-      id: 3,
-      title: 'Product Manager',
-      department: 'Product',
-      location: 'Remote',
-      salary: '$100,000 - $130,000',
-      experience: 'mid',
-      type: 'Full-time',
-      posted: '3 days ago',
-      description: 'Drive product strategy for EduAI. Collaborate with engineering, design, and education teams to build innovative learning experiences.',
-      requirements: [
-        '3+ years of product management experience',
-        'Experience in edtech preferred',
-        'Strong analytical skills',
-        'Excellent communication skills'
-      ],
-      benefits: [
-        'Remote work',
-        'Health insurance',
-        '401(k) matching',
-        'Professional development',
-        'Flexible PTO'
-      ]
-    },
-    {
-      id: 4,
-      title: 'UX/UI Designer',
-      department: 'Design',
-      location: 'New York, NY',
-      salary: '$90,000 - $120,000',
-      experience: 'mid',
-      type: 'Full-time',
-      posted: '1 day ago',
-      description: 'Create beautiful, intuitive interfaces for our educational platform. Focus on accessibility and delightful user experiences.',
-      requirements: [
-        '3+ years of UX/UI design experience',
-        'Proficiency in Figma/Sketch',
-        'Portfolio demonstrating design thinking',
-        'Experience with design systems'
-      ],
-      benefits: [
-        'Creative freedom',
-        'Health insurance',
-        '401(k) matching',
-        'Design conference attendance',
-        'Home office stipend'
-      ]
-    },
-    {
-      id: 5,
-      title: 'Educational Content Specialist',
-      department: 'Education',
-      location: 'Remote',
-      salary: '$70,000 - $90,000',
-      experience: 'entry',
-      type: 'Full-time',
-      posted: '5 days ago',
-      description: 'Develop educational content and curricula for AI-generated assignments. Work closely with teachers and AI researchers.',
-      requirements: [
-        'Bachelor\'s degree in Education or related field',
-        'Teaching experience preferred',
-        'Strong writing skills',
-        'Familiarity with curriculum standards'
-      ],
-      benefits: [
-        'Remote work',
-        'Health insurance',
-        '401(k) matching',
-        'Professional development',
-        'Summer break'
-      ]
-    },
-    {
-      id: 6,
-      title: 'DevOps Engineer',
-      department: 'Engineering',
-      location: 'Austin, TX',
-      salary: '$110,000 - $140,000',
-      experience: 'mid',
-      type: 'Full-time',
-      posted: '1 week ago',
-      description: 'Manage our cloud infrastructure and deployment pipelines. Ensure high availability and scalability of our platform.',
-      requirements: [
-        '3+ years of DevOps experience',
-        'AWS/GCP experience',
-        'Kubernetes/Docker expertise',
-        'CI/CD pipeline management'
-      ],
-      benefits: [
-        'Remote work flexibility',
-        'Health insurance',
-        '401(k) matching',
-        'Stock options',
-        'Unlimited PTO'
-      ]
-    }
   ];
 
   // Load jobs on mount
@@ -191,35 +75,48 @@ const CareersPage = () => {
 
   // Apply filters
   useEffect(() => {
-    let filtered = jobs.filter(job => {
+    let filtered = jobs.filter((job) => {
       // Search term filter
-      if (searchTerm && !job.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !job.department.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !job.description.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (
+        searchTerm &&
+        !job.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !job.department.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !job.description.toLowerCase().includes(searchTerm.toLowerCase())
+      ) {
         return false;
       }
 
       // Location filter
-      if (filters.location !== 'all' && job.location !== filters.location) {
+      if (filters.location !== "all" && job.location !== filters.location) {
         return false;
       }
 
       // Salary filter
-      if (filters.salary !== 'all') {
-        const salaryRange = job.salary.replace(/[^\d\-]/g, '').split('-');
+      if (filters.salary !== "all") {
+        const salaryRange = job.salary.replace(/[^\d\-]/g, "").split("-");
         const minSalary = parseInt(salaryRange[0]);
-        if (filters.salary === 'low' && minSalary > 80000) return false;
-        if (filters.salary === 'mid' && (minSalary < 80000 || minSalary > 120000)) return false;
-        if (filters.salary === 'high' && minSalary < 120000) return false;
+        if (filters.salary === "low" && minSalary > 80000) return false;
+        if (
+          filters.salary === "mid" &&
+          (minSalary < 80000 || minSalary > 120000)
+        )
+          return false;
+        if (filters.salary === "high" && minSalary < 120000) return false;
       }
 
       // Experience filter
-      if (filters.experience !== 'all' && job.experience !== filters.experience) {
+      if (
+        filters.experience !== "all" &&
+        job.experience !== filters.experience
+      ) {
         return false;
       }
 
       // Department filter
-      if (filters.department !== 'all' && job.department !== filters.department) {
+      if (
+        filters.department !== "all" &&
+        job.department !== filters.department
+      ) {
         return false;
       }
 
@@ -230,19 +127,19 @@ const CareersPage = () => {
   }, [searchTerm, filters, jobs]);
 
   const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [filterType]: value
+      [filterType]: value,
     }));
   };
 
   const clearFilters = () => {
-    setSearchTerm('');
+    setSearchTerm("");
     setFilters({
-      location: 'all',
-      salary: 'all',
-      experience: 'all',
-      department: 'all'
+      location: "all",
+      salary: "all",
+      experience: "all",
+      department: "all",
     });
   };
 
@@ -257,12 +154,16 @@ const CareersPage = () => {
                 <Building className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">Careers at EduAI</h1>
-                <p className="text-gray-600">Join our mission to revolutionize education</p>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  Careers at EduAI
+                </h1>
+                <p className="text-gray-600">
+                  Join our mission to revolutionize education
+                </p>
               </div>
             </div>
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="flex items-center space-x-1 text-gray-600 hover:text-gray-800"
             >
               <Home className="w-4 h-4" />
@@ -275,9 +176,12 @@ const CareersPage = () => {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Shape the Future of Education</h2>
+          <h2 className="text-4xl font-bold mb-4">
+            Shape the Future of Education
+          </h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Join EduAI, a subsidiary of BAI Studios, and help transform how millions of students learn through AI-powered technology.
+            Join EduAI, a subsidiary of BAI Studios, and help transform how
+            millions of students learn through AI-powered technology.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <div className="flex items-center space-x-2 bg-white/20 px-4 py-2 rounded-full">
@@ -311,9 +215,11 @@ const CareersPage = () => {
                   Part of BAI Studios Family
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  When you join EduAI, you're not just joining a startup—you're becoming part of 
-                  <strong> BAI Studios</strong>, a leading innovator in AI-powered solutions. 
-                  Enjoy career growth opportunities across multiple divisions and cutting-edge projects.
+                  When you join EduAI, you're not just joining a startup—you're
+                  becoming part of
+                  <strong> BAI Studios</strong>, a leading innovator in
+                  AI-powered solutions. Enjoy career growth opportunities across
+                  multiple divisions and cutting-edge projects.
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -343,16 +249,21 @@ const CareersPage = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <DollarSign className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">Competitive Salary</h4>
+              <h4 className="text-xl font-semibold text-gray-800 mb-2">
+                Competitive Salary
+              </h4>
               <p className="text-gray-600">
-                Transparent salary ranges and equity opportunities for all roles.
+                Transparent salary ranges and equity opportunities for all
+                roles.
               </p>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Wifi className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">Remote Flexibility</h4>
+              <h4 className="text-xl font-semibold text-gray-800 mb-2">
+                Remote Flexibility
+              </h4>
               <p className="text-gray-600">
                 Work from anywhere with our flexible remote-first policy.
               </p>
@@ -361,16 +272,21 @@ const CareersPage = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Coffee className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">Unlimited PTO</h4>
+              <h4 className="text-xl font-semibold text-gray-800 mb-2">
+                Unlimited PTO
+              </h4>
               <p className="text-gray-600">
-                Take time off when you need it with our unlimited vacation policy.
+                Take time off when you need it with our unlimited vacation
+                policy.
               </p>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Heart className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">Health & Wellness</h4>
+              <h4 className="text-xl font-semibold text-gray-800 mb-2">
+                Health & Wellness
+              </h4>
               <p className="text-gray-600">
                 Comprehensive health insurance and wellness programs.
               </p>
@@ -379,16 +295,20 @@ const CareersPage = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-red-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">Learning Stipend</h4>
+              <h4 className="text-xl font-semibold text-gray-800 mb-2">
+                Learning Stipend
+              </h4>
               <p className="text-gray-600">
-                $2,000 annual stipend for courses, conferences, and books.
+                £2,000 annual stipend for courses, conferences, and books.
               </p>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <TrendingUp className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">Career Growth</h4>
+              <h4 className="text-xl font-semibold text-gray-800 mb-2">
+                Career Growth
+              </h4>
               <p className="text-gray-600">
                 Fast-track advancement within EduAI and BAI Studios.
               </p>
@@ -422,28 +342,32 @@ const CareersPage = () => {
               <div className="flex flex-wrap gap-4">
                 <select
                   value={filters.location}
-                  onChange={(e) => handleFilterChange('location', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("location", e.target.value)
+                  }
                   className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="all">All Locations</option>
                   <option value="Remote">Remote</option>
-                  <option value="San Francisco, CA">San Francisco, CA</option>
-                  <option value="New York, NY">New York, NY</option>
-                  <option value="Austin, TX">Austin, TX</option>
+                  <option value="London, UK">London, UK</option>
+                  <option value="New York, NY">New York, US</option>
+                  <option value="Beijing, CN">Beijing, CN</option>
                 </select>
                 <select
                   value={filters.salary}
-                  onChange={(e) => handleFilterChange('salary', e.target.value)}
+                  onChange={(e) => handleFilterChange("salary", e.target.value)}
                   className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="all">All Salaries</option>
-                  <option value="low">Under $80k</option>
-                  <option value="mid">$80k - $120k</option>
-                  <option value="high">Over $120k</option>
+                  <option value="low">Under £80k</option>
+                  <option value="mid">£80k - £120k</option>
+                  <option value="high">Over £120k</option>
                 </select>
                 <select
                   value={filters.experience}
-                  onChange={(e) => handleFilterChange('experience', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("experience", e.target.value)
+                  }
                   className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="all">All Levels</option>
@@ -453,7 +377,9 @@ const CareersPage = () => {
                 </select>
                 <select
                   value={filters.department}
-                  onChange={(e) => handleFilterChange('department', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("department", e.target.value)
+                  }
                   className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="all">All Departments</option>
@@ -481,7 +407,10 @@ const CareersPage = () => {
                 <div
                   key={job.id}
                   className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/job/${job.id}`)}
+                  onClick={() => {
+                    console.log("=== NAVIGATING TO JOB ===", job.id);
+                    navigate(`/job/${job.id}`);
+                  }}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -504,9 +433,13 @@ const CareersPage = () => {
                         <div className="flex items-center space-x-1">
                           <Briefcase className="w-4 h-4" />
                           <span>
-                            {job.experience === 'entry' ? 'Entry Level' :
-                             job.experience === 'mid' ? 'Mid Level' :
-                             job.experience === 'senior' ? 'Senior Level' : 'All Levels'}
+                            {job.experience === "entry"
+                              ? "Entry Level"
+                              : job.experience === "mid"
+                              ? "Mid Level"
+                              : job.experience === "senior"
+                              ? "Senior Level"
+                              : "All Levels"}
                           </span>
                         </div>
                         <div className="flex items-center space-x-1">
@@ -573,14 +506,16 @@ const CareersPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => navigate('/contact')}
+              onClick={() => navigate("/contact")}
               className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all flex items-center justify-center space-x-2"
             >
               <Mail className="w-5 h-5" />
               <span>Contact Us</span>
             </button>
             <button
-              onClick={() => window.open('https://github.com/Central3465/EduAI', '_blank')}
+              onClick={() =>
+                window.open("https://github.com/Central3465/EduAI", "_blank")
+              }
               className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-all flex items-center justify-center space-x-2"
             >
               <Star className="w-5 h-5" />

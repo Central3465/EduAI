@@ -1,8 +1,8 @@
 // src/pages/JobDetailPage.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
-import { useNotification } from '../context/NotificationContext';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
+import { useNotification } from "../context/NotificationContext";
 import {
   ArrowLeft,
   Building,
@@ -28,300 +28,102 @@ import {
   Heart,
   Coffee,
   Wifi,
-  Home
-} from 'lucide-react';
+  Home,
+  X
+} from "lucide-react";
 
 const JobDetailPage = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
-  
+
   // Mock job data (in a real app, this would come from API/context)
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
-  
+
   // Application form state
   const [application, setApplication] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    linkedin: '',
-    github: '',
-    coverLetter: '',
+    name: "",
+    email: "",
+    phone: "",
+    linkedin: "",
+    github: "",
+    coverLetter: "",
     resume: null,
-    portfolio: '',
-    startDate: '',
-    experience: '',
-    whyInterested: ''
+    portfolio: "",
+    startDate: "",
+    experience: "",
+    whyInterested: "",
   });
-  
+
   const [errors, setErrors] = useState({});
   const [showApplicationForm, setShowApplicationForm] = useState(false);
 
-  // Mock jobs data (would come from context/API in real app)
   const mockJobs = [
     {
       id: 1,
-      title: 'Senior Frontend Developer',
-      department: 'Engineering',
-      location: 'Remote',
-      salary: '$120,000 - $150,000',
-      experience: 'senior',
-      type: 'Full-time',
-      posted: '2 days ago',
-      description: 'Join our engineering team to build cutting-edge educational technology platforms. Work with React, Vite, and modern web technologies.',
+      title: "QA Tester",
+      department: "Product",
+      location: "Remote",
+      salary: "£20,000 - £35,000",
+      experience: "entry",
+      type: "Part-time",
+      posted: "17.10.2025",
+      description:
+        "Join our development team to test upcoming features and ensure quality across our AI-powered education platform.",
       responsibilities: [
-        'Develop and maintain our React-based frontend applications',
-        'Collaborate with designers and backend engineers',
-        'Implement responsive and accessible UI components',
-        'Optimize application performance and user experience',
-        'Participate in code reviews and technical discussions',
-        'Contribute to our design system and component library'
+        "Test new platform features across browsers and devices",
+        "Log bugs and collaborate with developers to fix them",
+        "Write and maintain test cases",
       ],
       requirements: [
-        '5+ years of React experience',
-        'Experience with modern build tools (Vite, Webpack)',
-        'Strong TypeScript skills',
-        'Familiarity with AI/ML technologies',
-        'Experience with testing frameworks (Jest, Cypress)',
-        'Knowledge of accessibility standards (WCAG)'
+        "Attention to detail",
+        "Experience with testing tools",
+        "Basic understanding of software development",
+        "Good communication skills",
       ],
-      benefits: [
-        'Remote work flexibility',
-        'Health insurance',
-        '401(k) matching',
-        'Unlimited PTO',
-        'Learning stipend ($2,000/year)',
-        'Stock options',
-        'Annual conference budget ($1,500/year)'
-      ],
+      benefits: ["Competitive salary", "Remote work", "Flexible hours"],
       team: {
-        name: 'Frontend Engineering',
-        size: 8,
-        description: 'Our frontend team builds beautiful, performant interfaces that delight educators and students worldwide.'
-      }
-    },
-    {
-      id: 2,
-      title: 'AI Research Scientist',
-      department: 'AI/ML',
-      location: 'San Francisco, CA',
-      salary: '$140,000 - $180,000',
-      experience: 'senior',
-      type: 'Full-time',
-      posted: '1 week ago',
-      description: 'Lead AI research initiatives to improve educational outcomes. Work with cutting-edge machine learning models and natural language processing.',
-      responsibilities: [
-        'Design and implement ML models for educational content generation',
-        'Conduct research on personalized learning algorithms',
-        'Collaborate with product and engineering teams',
-        'Publish findings in academic journals and conferences',
-        'Mentor junior researchers and interns',
-        'Stay current with latest AI/ML developments'
-      ],
-      requirements: [
-        'PhD in Computer Science, AI, or related field',
-        'Experience with TensorFlow/PyTorch',
-        'Published research in ML/AI',
-        'Strong Python skills',
-        'Experience with NLP and LLMs',
-        'Knowledge of educational research methodologies'
-      ],
-      benefits: [
-        'Stock options',
-        'Research funding ($10,000/year)',
-        'Conference attendance',
-        'Flexible schedule',
-        'Health insurance',
-        '401(k) matching',
-        'Annual sabbatical (4 weeks)'
-      ],
-      team: {
-        name: 'AI Research',
-        size: 12,
-        description: 'Our AI research team pushes the boundaries of educational technology through groundbreaking machine learning innovations.'
-      }
-    },
-    {
-      id: 3,
-      title: 'Product Manager',
-      department: 'Product',
-      location: 'Remote',
-      salary: '$100,000 - $130,000',
-      experience: 'mid',
-      type: 'Full-time',
-      posted: '3 days ago',
-      description: 'Drive product strategy for EduAI. Collaborate with engineering, design, and education teams to build innovative learning experiences.',
-      responsibilities: [
-        'Define product roadmap and feature priorities',
-        'Work with stakeholders to gather requirements',
-        'Analyze user feedback and market trends',
-        'Coordinate cross-functional teams',
-        'Track product metrics and KPIs',
-        'Create product documentation and specs'
-      ],
-      requirements: [
-        '3+ years of product management experience',
-        'Experience in edtech preferred',
-        'Strong analytical skills',
-        'Excellent communication skills',
-        'Familiarity with Agile methodologies',
-        'Experience with analytics tools (Mixpanel, Amplitude)'
-      ],
-      benefits: [
-        'Remote work',
-        'Health insurance',
-        '401(k) matching',
-        'Professional development',
-        'Flexible PTO',
-        'Stock options',
-        'Product conference budget ($1,000/year)'
-      ],
-      team: {
-        name: 'Product',
-        size: 6,
-        description: 'Our product team ensures EduAI delivers exceptional value to educators and students through thoughtful, data-driven decisions.'
-      }
-    },
-    {
-      id: 4,
-      title: 'UX/UI Designer',
-      department: 'Design',
-      location: 'New York, NY',
-      salary: '$90,000 - $120,000',
-      experience: 'mid',
-      type: 'Full-time',
-      posted: '1 day ago',
-      description: 'Create beautiful, intuitive interfaces for our educational platform. Focus on accessibility and delightful user experiences.',
-      responsibilities: [
-        'Design user interfaces for web and mobile apps',
-        'Create wireframes, prototypes, and high-fidelity designs',
-        'Conduct user research and usability testing',
-        'Collaborate with product and engineering teams',
-        'Maintain and evolve our design system',
-        'Ensure accessibility compliance'
-      ],
-      requirements: [
-        '3+ years of UX/UI design experience',
-        'Proficiency in Figma/Sketch',
-        'Portfolio demonstrating design thinking',
-        'Experience with design systems',
-        'Knowledge of accessibility standards',
-        'Experience with user research methods'
-      ],
-      benefits: [
-        'Creative freedom',
-        'Health insurance',
-        '401(k) matching',
-        'Design conference attendance',
-        'Home office stipend ($1,000/year)',
-        'Flexible PTO',
-        'Stock options'
-      ],
-      team: {
-        name: 'Design',
+        name: "QA Team",
         size: 5,
-        description: 'Our design team crafts intuitive, beautiful experiences that make learning enjoyable for everyone.'
-      }
+        description: "A tight-knit crew ensuring every release is top quality.",
+      },
     },
-    {
-      id: 5,
-      title: 'Educational Content Specialist',
-      department: 'Education',
-      location: 'Remote',
-      salary: '$70,000 - $90,000',
-      experience: 'entry',
-      type: 'Full-time',
-      posted: '5 days ago',
-      description: 'Develop educational content and curricula for AI-generated assignments. Work closely with teachers and AI researchers.',
-      responsibilities: [
-        'Create educational content for various subjects',
-        'Develop curriculum-aligned learning materials',
-        'Review and validate AI-generated content',
-        'Collaborate with teachers and researchers',
-        'Conduct content quality assurance',
-        'Stay current with educational standards'
-      ],
-      requirements: [
-        'Bachelor\'s degree in Education or related field',
-        'Teaching experience preferred',
-        'Strong writing skills',
-        'Familiarity with curriculum standards',
-        'Experience with educational technology',
-        'Knowledge of assessment design'
-      ],
-      benefits: [
-        'Remote work',
-        'Health insurance',
-        '401(k) matching',
-        'Professional development',
-        'Summer break',
-        'Flexible PTO',
-        'Conference budget ($500/year)'
-      ],
-      team: {
-        name: 'Education',
-        size: 7,
-        description: 'Our education team ensures all content meets the highest pedagogical standards and supports diverse learning needs.'
-      }
-    },
-    {
-      id: 6,
-      title: 'DevOps Engineer',
-      department: 'Engineering',
-      location: 'Austin, TX',
-      salary: '$110,000 - $140,000',
-      experience: 'mid',
-      type: 'Full-time',
-      posted: '1 week ago',
-      description: 'Manage our cloud infrastructure and deployment pipelines. Ensure high availability and scalability of our platform.',
-      responsibilities: [
-        'Manage AWS/GCP infrastructure',
-        'Implement CI/CD pipelines',
-        'Monitor system performance and reliability',
-        'Ensure security and compliance',
-        'Troubleshoot production issues',
-        'Optimize infrastructure costs'
-      ],
-      requirements: [
-        '3+ years of DevOps experience',
-        'AWS/GCP experience',
-        'Kubernetes/Docker expertise',
-        'CI/CD pipeline management',
-        'Infrastructure as Code (Terraform)',
-        'Monitoring tools (Prometheus, Grafana)'
-      ],
-      benefits: [
-        'Remote work flexibility',
-        'Health insurance',
-        '401(k) matching',
-        'Stock options',
-        'Unlimited PTO',
-        'Learning stipend ($2,000/year)',
-        'Conference budget ($1,500/year)'
-      ],
-      team: {
-        name: 'Platform Engineering',
-        size: 4,
-        description: 'Our platform engineering team keeps EduAI running smoothly and scales our infrastructure to meet growing demand.'
-      }
-    }
   ];
 
-  // Load job data on mount
   useEffect(() => {
     const loadJob = () => {
       setLoading(true);
+
+      // ✅ Add debug logs
+      console.log("=== LOADING JOB DETAIL ===", jobId);
+
       // Simulate API call
       setTimeout(() => {
-        const foundJob = mockJobs.find(j => j.id.toString() === jobId);
+        // ✅ Make sure jobId is valid
+        if (!jobId || isNaN(jobId)) {
+          console.error("Invalid job ID:", jobId);
+          showError("Invalid job ID");
+          navigate("/careers"); // ✅ Only redirect on REAL errors
+          setLoading(false);
+          return;
+        }
+
+        const foundJob = mockJobs.find(
+          (j) => j.id.toString() === jobId.toString()
+        );
+
         if (foundJob) {
+          console.log("=== JOB FOUND ===", foundJob);
           setJob(foundJob);
         } else {
-          showError('Job not found');
-          navigate('/careers');
+          console.error("Job not found for ID:", jobId);
+          showError("Job not found");
+          // ✅ Only redirect if job truly doesn't exist
+          // navigate('/careers'); // ❌ Remove this for debugging
         }
+
         setLoading(false);
       }, 500);
     };
@@ -329,16 +131,17 @@ const JobDetailPage = () => {
     if (jobId) {
       loadJob();
     } else {
-      navigate('/careers');
+      console.log("=== NO JOB ID PROVIDED ===");
+      // navigate('/careers'); // ❌ Remove this too
     }
   }, [jobId, navigate, showError]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setApplication(prev => ({
+    setApplication((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -347,111 +150,117 @@ const JobDetailPage = () => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type and size
-      const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const validTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
       const maxSize = 5 * 1024 * 1024; // 5MB
-      
+
       if (!validTypes.includes(file.type)) {
-        showError('Please upload a PDF or Word document');
+        showError("Please upload a PDF or Word document");
         return;
       }
-      
+
       if (file.size > maxSize) {
-        showError('File size must be less than 5MB');
+        showError("File size must be less than 5MB");
         return;
       }
-      
-      setApplication(prev => ({
+
+      setApplication((prev) => ({
         ...prev,
-        resume: file
+        resume: file,
       }));
-      showSuccess('Resume uploaded successfully!');
+      showSuccess("Resume uploaded successfully!");
     }
   };
 
   // Validate application form
   const validateApplication = () => {
     const newErrors = {};
-    
+
     if (!application.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     }
-    
+
     if (!application.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(application.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
-    
+
     if (!application.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
+      newErrors.phone = "Phone number is required";
     }
-    
+
     if (!application.coverLetter.trim()) {
-      newErrors.coverLetter = 'Cover letter is required';
+      newErrors.coverLetter = "Cover letter is required";
     }
-    
+
     if (!application.resume) {
-      newErrors.resume = 'Please upload your resume';
+      newErrors.resume = "Please upload your resume";
     }
-    
+
     if (!application.startDate.trim()) {
-      newErrors.startDate = 'Availability date is required';
+      newErrors.startDate = "Availability date is required";
     }
-    
+
     if (!application.experience.trim()) {
-      newErrors.experience = 'Experience level is required';
+      newErrors.experience = "Experience level is required";
     }
-    
+
     if (!application.whyInterested.trim()) {
-      newErrors.whyInterested = 'Please tell us why you\'re interested';
+      newErrors.whyInterested = "Please tell us why you're interested";
     }
-    
+
     return newErrors;
   };
 
   // Handle application submission
   const handleApplicationSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validationErrors = validateApplication();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      showError('Please fill in all required fields');
+      showError("Please fill in all required fields");
       return;
     }
-    
+
     setApplying(true);
-    
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // In a real app, you'd send the application to your backend
-      console.log('Application submitted:', {
+      console.log("Application submitted:", {
         jobId: job.id,
         jobTitle: job.title,
-        ...application
+        ...application,
       });
-      
-      showSuccess('Application submitted successfully! We\'ll review your application and get back to you soon.');
+
+      showSuccess(
+        "Application submitted successfully! We'll review your application and get back to you soon."
+      );
       setShowApplicationForm(false);
       setApplication({
-        name: '',
-        email: '',
-        phone: '',
-        linkedin: '',
-        github: '',
-        coverLetter: '',
+        name: "",
+        email: "",
+        phone: "",
+        linkedin: "",
+        github: "",
+        coverLetter: "",
         resume: null,
-        portfolio: '',
-        startDate: '',
-        experience: '',
-        whyInterested: ''
+        portfolio: "",
+        startDate: "",
+        experience: "",
+        whyInterested: "",
       });
     } catch (error) {
-      showError('Failed to submit application. Please try again.');
+      showError("Failed to submit application. Please try again.");
     }
-    
+
     setApplying(false);
   };
 
@@ -467,8 +276,12 @@ const JobDetailPage = () => {
           <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
             <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full"></div>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Loading Job Details...</h2>
-          <p className="text-gray-300">Please wait while we fetch the job information.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Loading Job Details...
+          </h2>
+          <p className="text-gray-300">
+            Please wait while we fetch the job information.
+          </p>
         </div>
       </div>
     );
@@ -482,9 +295,11 @@ const JobDetailPage = () => {
             <AlertCircle className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Job Not Found</h2>
-          <p className="text-gray-300 mb-6">The job you're looking for doesn't exist or has been removed.</p>
+          <p className="text-gray-300 mb-6">
+            The job you're looking for doesn't exist or has been removed.
+          </p>
           <button
-            onClick={() => navigate('/careers')}
+            onClick={() => navigate("/careers")}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all flex items-center justify-center space-x-2 mx-auto"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -508,7 +323,7 @@ const JobDetailPage = () => {
               <h1 className="text-xl font-bold text-gray-800">EduAI Careers</h1>
             </div>
             <button
-              onClick={() => navigate('/careers')}
+              onClick={() => navigate("/careers")}
               className="flex items-center space-x-1 text-gray-600 hover:text-gray-800"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -564,13 +379,19 @@ const JobDetailPage = () => {
               <div className="lg:col-span-2 space-y-8">
                 {/* Job Description */}
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">Job Description</h2>
-                  <p className="text-gray-600 leading-relaxed">{job.description}</p>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                    Job Description
+                  </h2>
+                  <p className="text-gray-600 leading-relaxed">
+                    {job.description}
+                  </p>
                 </div>
 
                 {/* Responsibilities */}
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Responsibilities</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                    Responsibilities
+                  </h3>
                   <ul className="space-y-3">
                     {job.responsibilities.map((responsibility, index) => (
                       <li key={index} className="flex items-start space-x-3">
@@ -585,7 +406,9 @@ const JobDetailPage = () => {
 
                 {/* Requirements */}
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Requirements</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                    Requirements
+                  </h3>
                   <ul className="space-y-3">
                     {job.requirements.map((requirement, index) => (
                       <li key={index} className="flex items-start space-x-3">
@@ -600,13 +423,17 @@ const JobDetailPage = () => {
 
                 {/* Team Info */}
                 <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Meet the Team</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                    Meet the Team
+                  </h3>
                   <div className="flex items-center space-x-4 mb-4">
                     <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-semibold">
                       {job.team.name.charAt(0)}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-800">{job.team.name}</h4>
+                      <h4 className="font-semibold text-gray-800">
+                        {job.team.name}
+                      </h4>
                       <p className="text-gray-600">{job.team.size} members</p>
                     </div>
                   </div>
@@ -618,7 +445,9 @@ const JobDetailPage = () => {
               <div className="space-y-6">
                 {/* Benefits */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Benefits & Perks</h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    Benefits & Perks
+                  </h3>
                   <ul className="space-y-3">
                     {job.benefits.map((benefit, index) => (
                       <li key={index} className="flex items-start space-x-3">
@@ -631,7 +460,9 @@ const JobDetailPage = () => {
 
                 {/* Company Culture */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">BAI Studios Culture</h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    BAI Studios Culture
+                  </h3>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3">
                       <Coffee className="w-5 h-5 text-brown-500" />
@@ -671,7 +502,9 @@ const JobDetailPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800">Apply for {job.title}</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Apply for {job.title}
+              </h2>
               <button
                 onClick={() => setShowApplicationForm(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -683,7 +516,9 @@ const JobDetailPage = () => {
             <form onSubmit={handleApplicationSubmit} className="p-6 space-y-6">
               {/* Personal Information */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Personal Information
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -697,13 +532,15 @@ const JobDetailPage = () => {
                         value={application.name}
                         onChange={handleInputChange}
                         className={`w-full pl-10 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          errors.name ? 'border-red-500' : 'border-gray-300'
+                          errors.name ? "border-red-500" : "border-gray-300"
                         }`}
                         placeholder="Enter your full name"
                         required
                       />
                     </div>
-                    {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                    {errors.name && (
+                      <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                    )}
                   </div>
 
                   <div>
@@ -718,13 +555,17 @@ const JobDetailPage = () => {
                         value={application.email}
                         onChange={handleInputChange}
                         className={`w-full pl-10 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          errors.email ? 'border-red-500' : 'border-gray-300'
+                          errors.email ? "border-red-500" : "border-gray-300"
                         }`}
                         placeholder="your@email.com"
                         required
                       />
                     </div>
-                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.email}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -739,18 +580,23 @@ const JobDetailPage = () => {
                         value={application.phone}
                         onChange={handleInputChange}
                         className={`w-full pl-10 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          errors.phone ? 'border-red-500' : 'border-gray-300'
+                          errors.phone ? "border-red-500" : "border-gray-300"
                         }`}
                         placeholder="(123) 456-7890"
                         required
                       />
                     </div>
-                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                    {errors.phone && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.phone}
+                      </p>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Available Start Date <span className="text-red-500">*</span>
+                      Available Start Date{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
@@ -760,19 +606,27 @@ const JobDetailPage = () => {
                         value={application.startDate}
                         onChange={handleInputChange}
                         className={`w-full pl-10 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          errors.startDate ? 'border-red-500' : 'border-gray-300'
+                          errors.startDate
+                            ? "border-red-500"
+                            : "border-gray-300"
                         }`}
                         required
                       />
                     </div>
-                    {errors.startDate && <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>}
+                    {errors.startDate && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.startDate}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* Professional Links */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Professional Links</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Professional Links
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -837,7 +691,7 @@ const JobDetailPage = () => {
                   value={application.experience}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.experience ? 'border-red-500' : 'border-gray-300'
+                    errors.experience ? "border-red-500" : "border-gray-300"
                   }`}
                   required
                 >
@@ -846,7 +700,11 @@ const JobDetailPage = () => {
                   <option value="mid">Mid Level (3-5 years)</option>
                   <option value="senior">Senior Level (6+ years)</option>
                 </select>
-                {errors.experience && <p className="text-red-500 text-sm mt-1">{errors.experience}</p>}
+                {errors.experience && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.experience}
+                  </p>
+                )}
               </div>
 
               {/* Resume Upload */}
@@ -864,8 +722,12 @@ const JobDetailPage = () => {
                   />
                   <Upload className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
                 </div>
-                {errors.resume && <p className="text-red-500 text-sm mt-1">{errors.resume}</p>}
-                <p className="text-xs text-gray-500 mt-1">PDF or Word document, max 5MB</p>
+                {errors.resume && (
+                  <p className="text-red-500 text-sm mt-1">{errors.resume}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  PDF or Word document, max 5MB
+                </p>
               </div>
 
               {/* Cover Letter */}
@@ -879,18 +741,23 @@ const JobDetailPage = () => {
                   onChange={handleInputChange}
                   rows={6}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.coverLetter ? 'border-red-500' : 'border-gray-300'
+                    errors.coverLetter ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Tell us why you're interested in this position and what makes you a great fit for EduAI..."
                   required
                 />
-                {errors.coverLetter && <p className="text-red-500 text-sm mt-1">{errors.coverLetter}</p>}
+                {errors.coverLetter && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.coverLetter}
+                  </p>
+                )}
               </div>
 
               {/* Why Interested */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Why Are You Interested in EduAI? <span className="text-red-500">*</span>
+                  Why Are You Interested in EduAI?{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   name="whyInterested"
@@ -898,12 +765,16 @@ const JobDetailPage = () => {
                   onChange={handleInputChange}
                   rows={4}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.whyInterested ? 'border-red-500' : 'border-gray-300'
+                    errors.whyInterested ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="What excites you about working at EduAI and how would you contribute to our mission?"
                   required
                 />
-                {errors.whyInterested && <p className="text-red-500 text-sm mt-1">{errors.whyInterested}</p>}
+                {errors.whyInterested && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.whyInterested}
+                  </p>
+                )}
               </div>
 
               {/* Submit Button */}

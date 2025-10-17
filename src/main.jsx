@@ -28,13 +28,15 @@ import EmailVerificationPage from "./pages/EmailVerificationPage";
 import EmailVerificationFallback from "./pages/EmailVerificationFallback";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
-import JobDetailPage from "./pages/JobDetailPage";
 import ContactPage from "./pages/ContactPage";
 import PricingPage from "./pages/PricingPage";
 import CareersPage from "./pages/CareersPage";
 import BlogPage from "./pages/BlogPage";
 import RoadmapPage from "./pages/RoadmapPage";
 import CommunityPage from "./pages/CommunityPage";
+import DocumentationPage from "./pages/DocumentationPage";
+import HelpCenterPage from "./pages/HelpCenterPage";
+import JobDetailPage from "./pages/JobDetailPage";
 
 import "./index.css";
 
@@ -86,6 +88,9 @@ const router = createBrowserRouter(
       <Route path="/blog" element={<BlogPage />} />
       <Route path="/roadmap" element={<RoadmapPage />} />
       <Route path="/community" element={<CommunityPage />} />
+      <Route path="/documentation" element={<DocumentationPage />} />
+      <Route path="/help-center" element={<HelpCenterPage />} />
+      <Route path="/job/:jobId" element={<JobDetailPage />} />
 
       {/* 🔒 Protected routes */}
       <Route element={<ProtectedRoute />}>

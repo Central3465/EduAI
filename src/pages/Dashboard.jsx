@@ -56,7 +56,7 @@ const Dashboard = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 10000); // 10 seconds
+    }, 1000); // 10 seconds
 
     // Cleanup timer if component unmounts
     return () => clearTimeout(timer);
