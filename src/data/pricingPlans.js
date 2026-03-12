@@ -7,7 +7,7 @@ export const pricingPlans = [
     period: '7 days',
     description: 'Perfect for trying out EduAI',
     features: [
-      '7-day free trial',
+      'Basic AI features',
       'Create up to 5 assignments',
       'Basic AI question generation',
       'Up to 30 students',

@@ -32,7 +32,6 @@ export const SubscriptionProvider = ({ children }) => {
   const { currentUser, userRole } = appContext || {}; // ✅ Safe destructuring with fallback
 
   const [loading, setLoading] = useState(true);
-  const [trialEnded, setTrialEnded] = useState(false);
 
   const initialSubscription =
     currentUser?.email && ADMIN_EMAILS.includes(currentUser.email)
@@ -85,18 +84,9 @@ export const SubscriptionProvider = ({ children }) => {
         if (saved) {
           const sub = JSON.parse(saved);
           setSubscription(sub);
-
-          // Check if trial has ended
-          if (sub.planId === "free" && sub.trialEndsAt) {
-            const trialEndDate = new Date(sub.trialEndsAt);
-            const now = new Date();
-            if (now > trialEndDate) {
-              setTrialEnded(true);
-            }
-          }
         } else {
-          // Create free trial for new teachers
-          createFreeTrial();
+          // Create basic subscription for new teachers (no trial)
+          createBasicSubscription();
         }
       }
       setLoading(false);
@@ -117,8 +107,8 @@ export const SubscriptionProvider = ({ children }) => {
     }
   }, [subscription, currentUser]);
 
-  // ✅ Create free trial subscription
-  const createFreeTrial = useCallback(() => {
+  // ✅ Create basic subscription (no trial)
+  const createBasicSubscription = useCallback(() => {
     // ✅ Check if user is admin
     if (currentUser?.email && ADMIN_EMAILS.includes(currentUser.email)) {
       setSubscription({
@@ -139,27 +129,21 @@ export const SubscriptionProvider = ({ children }) => {
     }
 
     if (userRole === "teacher" && currentUser?.email) {
-      const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 7); // 7-day trial
-
-      const newSubscription = {
+      const basicSubscription = {
         id: `sub_${Date.now()}`,
         userId: currentUser.email,
         planId: "free",
         status: "active",
         startDate: new Date().toISOString(),
-        trialEndsAt: trialEndsAt.toISOString(),
         features: [
-          "7-day free trial",
+          "Basic AI features",
           "Create up to 5 assignments",
-          "Basic AI question generation",
-          "Up to 30 students",
-          "Basic analytics",
+          "Email support",
         ],
       };
 
-      setSubscription(newSubscription);
-      return newSubscription;
+      setSubscription(basicSubscription);
+      return basicSubscription;
     }
     return null;
   }, [currentUser, userRole]);
@@ -255,21 +239,16 @@ export const SubscriptionProvider = ({ children }) => {
 
     if (!subscription) return false;
 
-    // Free trial users can access during trial period
-    if (subscription.planId === "free" && !trialEnded) {
-      return true;
-    }
-
-    // Paid users can access
-    if (
-      ["basic", "pro", "enterprise"].includes(subscription.planId) &&
-      subscription.status === "active"
-    ) {
-      return true;
+    // ✅ Teachers can ONLY access with paid plans (no free access)
+    if (userRole === "teacher") {
+      return (
+        ["basic", "pro", "enterprise"].includes(subscription.planId) &&
+        subscription.status === "active"
+      );
     }
 
     return false;
-  }, [subscription, userRole, trialEnded]);
+  }, [subscription, userRole]);
 
   // ✅ Check if user can use AI features
   const canUseAI = useCallback(() => {
@@ -309,8 +288,7 @@ export const SubscriptionProvider = ({ children }) => {
       value={{
         subscription,
         loading,
-        trialEnded,
-        createFreeTrial,
+        createBasicSubscription,
         upgradeSubscription,
         cancelSubscription,
         canAccessDashboard,

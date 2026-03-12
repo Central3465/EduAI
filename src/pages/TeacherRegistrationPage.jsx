@@ -54,8 +54,8 @@ const TeacherRegistrationPage = () => {
 
     if (result.success) {
       showSuccess(result.message);
-      // Redirect after verification (you might want to show verification page)
-      setTimeout(() => navigate("/teacher-login"), 2000);
+      // Redirect to verification page with email and role
+      setTimeout(() => navigate(`/verify-email?email=${encodeURIComponent(formData.email)}&role=teacher`), 2000);
     } else {
       showError(result.message);
     }
@@ -172,13 +172,6 @@ const TeacherRegistrationPage = () => {
                 {errors.confirmPassword}
               </p>
             )}
-          </div>
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800 text-sm">
-              <strong>Forgot your verification code?</strong> Check your browser
-              console or localStorage for the code. It was shown during
-              registration.
-            </p>
           </div>
           <button
             type="submit"

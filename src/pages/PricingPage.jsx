@@ -370,11 +370,6 @@ const PricingPage = () => {
                 <span className="text-xl font-bold text-gray-900">
                   {subscription.planId === 'free' ? 'Free Trial' : subscription.planId.toUpperCase()}
                 </span>
-                {subscription.planId === 'free' && subscription.trialEndsAt && (
-                  <p className="text-gray-600">
-                    Trial ends: {new Date(subscription.trialEndsAt).toLocaleDateString()}
-                  </p>
-                )}
               </div>
               <div className="text-right">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${

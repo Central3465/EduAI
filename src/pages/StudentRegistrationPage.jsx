@@ -74,16 +74,8 @@ const StudentRegistrationPage = () => {
     if (result.success) {
       showSuccess(result.message);
       
-      // ✅ Redirect to verification or dashboard based on verification status
-      setTimeout(() => {
-        // If email verification is enabled, go to verification page
-        // Otherwise go to dashboard
-        if (result.needsVerification) {
-          navigate(`/verify-email?email=${encodeURIComponent(formData.email)}&role=student`);
-        } else {
-          navigate("/dashboard");
-        }
-      }, 2000);
+      // ✅ Redirect to verification page with email and role
+      setTimeout(() => navigate(`/verify-email?email=${encodeURIComponent(formData.email)}&role=student`), 2000);
     } else {
       showError(result.message);
     }

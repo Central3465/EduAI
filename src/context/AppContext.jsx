@@ -65,16 +65,6 @@ export const AppProvider = ({ children }) => {
     return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
   }, []);
 
-  const [verificationCodes, setVerificationCodes] = useState(() => {
-    const saved = localStorage.getItem("verificationCodes");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          teachers: {},
-          students: {},
-        };
-  });
-
   const sendVerificationEmail = useCallback(async (email, code, role) => {
     console.log(
       `📧 Verification email sent to ${email} for ${role} with code: ${code}`
@@ -196,34 +186,27 @@ const handleStudentRegistration = useCallback((userData) => {
   }
 }, [users, generateVerificationCode]);
 
-  // Save to localStorage
-  React.useEffect(() => {
-    localStorage.setItem(
-      "verificationCodes",
-      JSON.stringify(verificationCodes)
-    );
-  }, [verificationCodes]);
-
-  // Add verifyEmailWithCode function
+  // Add verifyEmailWithCode function - use localStorage approach to match EmailVerificationPage
   const verifyEmailWithCode = useCallback(
     (email, code, role) => {
       try {
-        // Check if code exists and is valid
-        const verification =
-          verificationCodes[role === "teacher" ? "teachers" : "students"]?.[
-            email
-          ];
-
-        if (!verification) {
+        // Check if code exists in localStorage (same approach as EmailVerificationPage)
+        const storedVerification = localStorage.getItem(`verification_${email}`);
+        if (!storedVerification) {
           throw new Error("Verification code not found");
         }
 
-        if (verification.code !== code) {
+        const verificationData = JSON.parse(storedVerification);
+        if (verificationData.code !== code) {
           throw new Error("Invalid verification code");
         }
 
-        if (new Date() > new Date(verification.expiry)) {
+        if (new Date() > new Date(verificationData.expiry)) {
           throw new Error("Verification code has expired");
+        }
+
+        if (verificationData.role !== role) {
+          throw new Error("Role mismatch");
         }
 
         // Update user to verified
@@ -245,23 +228,15 @@ const handleStudentRegistration = useCallback((userData) => {
           }
         });
 
-        // Remove verification code
-        setVerificationCodes((prev) => {
-          const newCodes = { ...prev };
-          if (role === "teacher") {
-            delete newCodes.teachers[email];
-          } else {
-            delete newCodes.students[email];
-          }
-          return newCodes;
-        });
+        // Remove verification code from localStorage
+        localStorage.removeItem(`verification_${email}`);
 
         return { success: true, message: "Email verified successfully!" };
       } catch (error) {
         return { success: false, message: error.message };
       }
     },
-    [verificationCodes]
+    [setUsers]
   );
 
   const handleTeacherLogin = useCallback(
@@ -354,7 +329,6 @@ const handleStudentRegistration = useCallback((userData) => {
         invitationCode,
         setInvitationCode,
         logout,
-        verificationCodes,
         generateVerificationCode,
         sendVerificationEmail,
         verifyEmailWithCode,

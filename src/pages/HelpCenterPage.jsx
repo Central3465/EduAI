@@ -150,8 +150,8 @@ const HelpCenterPage = () => {
           answer: "Yes! We offer special pricing for schools and districts. Contact sales for bulk pricing options."
         },
         {
-          question: "What happens after my free trial?",
-          answer: "After your 7-day free trial, you'll be automatically switched to the plan you selected. You can cancel anytime before the trial ends to avoid charges."
+        question: "What happens after my subscription?",
+        answer: "Your subscription will continue until you cancel it. You can cancel anytime and your access will continue until the end of your billing period."
         }
       ]
     }

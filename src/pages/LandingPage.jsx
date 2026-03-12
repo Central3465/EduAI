@@ -36,13 +36,6 @@ const LandingPage = () => {
               >
                 For Students
               </button>
-              <button 
-                onClick={() => navigate('/request-access')}
-                className="text-white hover:text-blue-200 transition-colors flex items-center space-x-1"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span>Request Access</span>
-              </button>
             </div>
           </nav>
 

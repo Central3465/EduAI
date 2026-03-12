@@ -44,7 +44,7 @@ const Dashboard = () => {
     showCreateModal,
   } = useAppContext();
 
-  const { canAccessDashboard, subscription, trialEnded, isAdmin, loading } =
+  const { canAccessDashboard, subscription, isAdmin, loading } =
     useSubscription();
 
   const { showSuccess, showError } = useNotification();
@@ -142,16 +142,12 @@ const Dashboard = () => {
         ) : (
           <span
             className={`px-3 py-1 rounded-full text-xs font-medium ${
-              subscription.planId === "free"
-                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                : subscription.planId === "basic"
+              subscription.planId === "basic"
                 ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                 : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
             }`}
           >
-            {subscription.planId === "free"
-              ? "Free Trial"
-              : subscription.planId === "basic"
+            {subscription.planId === "basic"
               ? "Basic Plan"
               : subscription.planId === "pro"
               ? "Pro Plan"
@@ -159,21 +155,6 @@ const Dashboard = () => {
           </span>
         )}
 
-        {/* Trial countdown for non-admins */}
-        {!isAdmin() &&
-          subscription.planId === "free" &&
-          subscription.trialEndsAt && ( // ✅ Use isAdmin() here too
-            <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-300">
-              <Clock className="w-3 h-3" />
-              <span>
-                {Math.ceil(
-                  (new Date(subscription.trialEndsAt) - new Date()) /
-                    (1000 * 60 * 60 * 24)
-                )}{" "}
-                days left
-              </span>
-            </div>
-          )}
       </div>
     );
   }
@@ -181,7 +162,7 @@ const Dashboard = () => {
   if (userRole === "teacher" && !canAccessDashboard() && !isAdmin()) {
     // ✅ Add isAdmin() check
     return (
-      <PaywallScreen subscription={subscription} trialEnded={trialEnded} />
+      <PaywallScreen subscription={subscription} />
     );
   }
 
@@ -206,35 +187,18 @@ const Dashboard = () => {
                 <div className="flex items-center space-x-2">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      subscription.planId === "free"
-                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                        : subscription.planId === "basic"
+                      subscription.planId === "basic"
                         ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                         : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
                     }`}
                   >
-                    {subscription.planId === "free"
-                      ? "Free Trial"
-                      : subscription.planId === "basic"
+                    {subscription.planId === "basic"
                       ? "Basic Plan"
                       : subscription.planId === "pro"
                       ? "Pro Plan"
                       : "Enterprise"}
                   </span>
 
-                  {subscription.planId === "free" &&
-                    subscription.trialEndsAt && (
-                      <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-300">
-                        <Clock className="w-3 h-3" />
-                        <span>
-                          {Math.ceil(
-                            (new Date(subscription.trialEndsAt) - new Date()) /
-                              (1000 * 60 * 60 * 24)
-                          )}{" "}
-                          days left
-                        </span>
-                      </div>
-                    )}
                 </div>
               )}
 

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { CreditCard, Shield, Clock, Star, Zap, Crown } from 'lucide-react';
 import { useSubscription } from '../../context/SubscriptionContext';
 
-const PaywallScreen = ({ subscription, trialEnded }) => {
+const PaywallScreen = ({ subscription }) => {
   const navigate = useNavigate();
   const { isAdmin } = useSubscription();
 
@@ -34,35 +34,16 @@ const PaywallScreen = ({ subscription, trialEnded }) => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl text-center">
         <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-          {trialEnded ? (
-            <Shield className="w-8 h-8 text-white" />
-          ) : (
-            <CreditCard className="w-8 h-8 text-white" />
-          )}
+          <CreditCard className="w-8 h-8 text-white" />
         </div>
 
         <h2 className="text-3xl font-bold text-gray-800 mb-4">
-          {trialEnded ? 'Trial Expired' : 'Subscription Required'}
+          Subscription Required
         </h2>
         
         <p className="text-gray-600 mb-8 text-lg">
-          {trialEnded
-            ? 'Your free trial has expired. Please upgrade to continue using EduAI.'
-            : 'Please subscribe to a plan to access the dashboard.'}
+          Please subscribe to a plan to access the dashboard.
         </p>
-
-        {/* Trial Info */}
-        {subscription?.planId === 'free' && subscription?.trialEndsAt && !trialEnded && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <Clock className="w-5 h-5 text-blue-600" />
-              <span className="font-medium text-blue-800">Free Trial Active</span>
-            </div>
-            <p className="text-blue-700">
-              Your trial ends on {new Date(subscription.trialEndsAt).toLocaleDateString()}
-            </p>
-          </div>
-        )}
 
         {/* Pricing Plans Preview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -123,13 +104,6 @@ const PaywallScreen = ({ subscription, trialEnded }) => {
           </button>
         </div>
 
-        {trialEnded && (
-          <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 text-sm">
-              <strong>Tip:</strong> Upgrade now to keep all your data and continue where you left off!
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
